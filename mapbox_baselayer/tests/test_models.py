@@ -16,6 +16,3 @@ class MapBaseLayerTEstCase(TestCase):
 
     def test_str(self):
         self.assertEqual(self.map_base_layer.name, 'Base layer 1')
-
-    def test_clean_ok(self):
-        self.assertIsNone(self.map_base_layer.clean())

@@ -59,23 +59,7 @@ class MapBaseLayer(models.Model):
         else:
             return self.map_box_url
 
-    def check_validity(self):
-        if self.base_layer_type == 'mapbox':
-            if self.tiles.exists():
-                # check if mapbox has not tiles
-                raise ValidationError(_("Mapbox base layer should not have tiles associated."))
-            if not self.map_box_url:
-                raise ValidationError(_("Mapbox base layer should have mapbox url associated."))
-        else:
-            if self.map_box_url:
-                raise ValidationError(_("Base layer should not have mapbox url associated."))
-
-    def clean(self):
-        """ auto used in model forms or admin // prevent exception """
-        self.check_validity()
-
     def save(self, *args, **kwargs):
-        self.check_validity()  # recheck validity for non ModelForm and admin
         self.slug = slugify(self.name)
         super().save(*args, **kwargs)
 
