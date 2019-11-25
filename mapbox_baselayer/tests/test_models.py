@@ -15,4 +15,4 @@ class MapBaseLayerTEstCase(TestCase):
         )
 
     def test_str(self):
-        self.assertEqual(self.map_base_layer.name, 'Base layer 1')
+        self.assertEqual(self.map_base_layer.name, str(self.map_base_layer))
