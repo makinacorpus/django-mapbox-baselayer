@@ -34,7 +34,7 @@ jobs:
     - pip install flake8
     before_script: skip
     script:
-    - flake8 terra_geocrud
+    - flake8 mapbox_baselayer
     after_script: skip
     after_success: skip
 
