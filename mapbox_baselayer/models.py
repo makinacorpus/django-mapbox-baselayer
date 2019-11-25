@@ -32,13 +32,15 @@ class MapBaseLayer(models.Model):
             "sources": {
                 f"{self.slug}": {
                     "type": f"{self.base_layer_type}",
-                    "tiles": self.tiles,
+                    "tiles": list(self.tiles.values_list('url', flat=True)),
                     "minzoom": self.min_zoom,
                     "maxzoom": self.max_zoom
                 }
             },
             "layers": [
-                {"id": f"{self.slug}-background", "type": f"{self.base_layer_type}", "source": f"{self.slug}"}
+                {"id": f"{self.slug}-background",
+                 "type": f"{self.base_layer_type}",
+                 "source": f"{self.slug}"}
             ]
         }
         # prevents mapbox problems by set glyphs and sprite only if specified
@@ -65,9 +67,6 @@ class MapBaseLayer(models.Model):
             if not self.map_box_url:
                 raise ValidationError(_("Mapbox base layer should have mapbox url associated."))
         else:
-            if not self.tiles.exists():
-                # check if mapbox has not tiles
-                raise ValidationError(_("Base layer should have tiles associated."))
             if self.map_box_url:
                 raise ValidationError(_("Base layer should not have mapbox url associated."))
 

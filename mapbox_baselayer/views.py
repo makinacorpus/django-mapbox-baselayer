@@ -9,4 +9,4 @@ class MapboxBaseLayerJsonDetailView(BaseDetailView):
     queryset = models.MapBaseLayer.objects.exclude(base_layer_type='mapbox')  # mapbox provide its own json
 
     def get(self, request, *args, **kwargs):
-        return JsonResponse(self.object.tilejson)
+        return JsonResponse(self.get_object().tilejson)
