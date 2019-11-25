@@ -1,0 +1,55 @@
+dist: bionic
+
+sudo: required
+
+language: python
+
+python:
+- '3.6'
+- '3.7'
+
+stages:
+- lint
+- test
+- deploy
+
+install:
+- pip install -e .[dev]
+- pip install codecov
+
+
+after_failure:
+- pip freeze
+
+script:
+- coverage run ./manage.py test
+
+after_success:
+  - codecov
+
+jobs:
+  include:
+  - stage: lint
+    install:
+    - pip install flake8
+    before_script: skip
+    script:
+    - flake8 terra_geocrud
+    after_script: skip
+    after_success: skip
+
+  - stage: deploy
+    install: skip
+    before_script: skip
+    script: skip
+    after_script: skip
+    after_success: skip
+
+    deploy:
+      stage: deploy
+      provider: pypi
+      user: __token__
+      password:
+        secure: j9fdiMDpjthZN4dhAcGSqFQWuGWPpa5cJmRy50F57G/WXmE76IWLiR/Fagg/acRmclBDfHgN+0y8v6jd64J9/gwpRqKs5Z8jArevjL13zxpkTyP9COSq9Pw5B7to/htwEl9KEBMInHIT/240UGxOj8THSMqPiBTYL5T4k6u6rzYtCcGT0kDeBLdIyTl2fYs31/EeCd941F8OCC+LstOzBiM7A3ISCEubDWYsqnvypYMBFqdlZThC9QjNQGcoQD7lJz6VJSDu0LJiqVcbjb0J4EC1XtxbQoKKNucRPfSv9MRzwA15wvYGjjeGEZQapfopv5TlTuQBDI39bONzIqgLGIk+ApjKMF8v1cIxeY2jcYpEbFS87CqzMC3lOQd+ZPxQCeKvJJU7bJQd7w+tVhMKhKPyUrokhl30mzTzqYVyHtdVfiDY+9aJsP2dCohlJmSG5Trn91CBjniGx3LhDzjwjYblwJij3ik/ovPJcONrZQtaf2xbi5W+PONDegtPKFDMdw+jQ0pomrgZizRO00424il+LMufYrvK7vyM3mUWyfFsk7emG0dmc4CB4VyWhdMGamhL14eQBi1U/mPR9v0OCPfnHgI0kP1xVeyQk5EmDcwy8gWduInkuKhLwdfcqZ9VH4vvGq6xmBHdXS2mwqhoJ7OsoDeXgBuk5H3uSrR7UP4=
+      on:
+        tags: true
