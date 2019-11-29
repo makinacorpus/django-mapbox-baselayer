@@ -8,4 +8,5 @@ class TileInLine(admin.StackedInline):
 
 
 class MapBaseLayerAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'name', 'slug')
     inlines = [TileInLine, ]
