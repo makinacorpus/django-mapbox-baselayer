@@ -2,7 +2,7 @@
 CHANGELOG
 =========
 
-0.0.2.dev0    (XXXX-XX-XX)
+0.0.2         (2019-11-29)
 --------------------------
 
 * Increase tile url max size
