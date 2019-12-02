@@ -79,5 +79,5 @@ class MapBaseLayer(models.Model):
 
 
 class BaseLayerTile(models.Model):
-    base_layer = models.ForeignKey(MapBaseLayer, related_name='tiles', on_delete=models.PROTECT)
+    base_layer = models.ForeignKey(MapBaseLayer, related_name='tiles', on_delete=models.CASCADE)
     url = models.CharField(max_length=512)
