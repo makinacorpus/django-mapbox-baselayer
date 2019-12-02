@@ -7,6 +7,7 @@ language: python
 python:
 - '3.6'
 - '3.7'
+- '3.8'
 
 stages:
 - lint
@@ -16,7 +17,6 @@ stages:
 install:
 - pip install -e .[dev]
 - pip install codecov
-
 
 after_failure:
 - pip freeze
@@ -41,7 +41,7 @@ jobs:
   - stage: deploy
     install: skip
     before_script: skip
-    script: skip
+    script: ./manage.py compilemessages
     after_script: skip
 
     deploy:
