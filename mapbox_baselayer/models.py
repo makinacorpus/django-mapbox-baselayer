@@ -58,6 +58,14 @@ class MapBaseLayer(models.Model):
         else:
             return self.map_box_url
 
+    @cached_property
+    def real_url(self):
+        if self.base_layer_type != 'mapbox':
+            return self.url
+        else:
+            return self.map_box_url.replace("mapbox://styles",
+                                            "https://api.mapbox.com/styles/v1")
+
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
         super().save(*args, **kwargs)
