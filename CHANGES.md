@@ -2,7 +2,7 @@
 CHANGELOG
 =========
 
-0.0.3.dev0    (XXXX-XX-XX)
+0.0.3         (2019-12-02)
 --------------------------
 
 * Add real_url property to model MapBaseLayer, to get real url for mapbox styles
