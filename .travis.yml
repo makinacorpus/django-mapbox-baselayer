@@ -20,15 +20,6 @@ env:
     - DJANGO_VERSION=3.0.*
     - DJANGO_VERSION=dev
 
-matrix:
-  allow_failures:
-    - python: 3.6
-      env: DJANGO_VERSION=dev
-    - python: 3.7
-      env: DJANGO_VERSION=dev
-    - python: 3.8
-      env: DJANGO_VERSION=dev
-
 install:
 - pip install -e .[dev]
 - pip install codecov
@@ -48,6 +39,14 @@ after_success:
   - codecov
 
 jobs:
+  allow_failures:
+    - python: 3.6
+      env: DJANGO_VERSION=dev
+    - python: 3.7
+      env: DJANGO_VERSION=dev
+    - python: 3.8
+      env: DJANGO_VERSION=dev
+
   include:
   - stage: lint
     install:
