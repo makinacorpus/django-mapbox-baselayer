@@ -58,12 +58,13 @@ jobs:
     after_success: skip
 
   - stage: deploy
-    install: skip
-    before_script: pip install django  # install django for compiling messages
+    install: pip install django  # install django for compiling messages
+    before_script: skip
     script: ./manage.py compilemessages  # compile messages
     after_script: skip
 
     deploy:
+      skip_cleanup: true
       stage: deploy
       provider: pypi
       user: __token__
