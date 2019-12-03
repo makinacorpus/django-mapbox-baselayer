@@ -1,4 +1,6 @@
 include *.md
 recursive-include mapbox_baselayer *.md
 recursive-include mapbox_baselayer *.py
+recursive-include mapbox_baselayer *.po
+recursive-include mapbox_baselayer *.mo
 recursive-exclude test_mapbox_baselayer *
