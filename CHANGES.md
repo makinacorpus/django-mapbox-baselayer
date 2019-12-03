@@ -2,6 +2,13 @@
 CHANGELOG
 =========
 
+0.0.4         (2019-12-02)
+--------------------------
+
+* add tile Size option for raster layers
+* add attribution option for all layers
+
+
 0.0.3         (2019-12-02)
 --------------------------
 

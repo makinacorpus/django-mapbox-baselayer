@@ -2,7 +2,7 @@ from django.db import models
 from django.urls import reverse
 from django.utils.functional import cached_property
 from django.utils.text import slugify
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 
 
 class MapBaseLayer(models.Model):
@@ -20,21 +20,35 @@ class MapBaseLayer(models.Model):
     glyphs = models.CharField(max_length=255, blank=True)
     min_zoom = models.PositiveSmallIntegerField(default=0)
     max_zoom = models.PositiveSmallIntegerField(default=22)
+    tile_size = models.PositiveSmallIntegerField(
+        default=512, help_text=_("Raster tile size. Set 256 for 3rd party raster tilesets.")
+    )
+    attribution = models.CharField(max_length=255, blank=True, default="")
 
     def __str__(self):
         return self.name
+
+    def get_source(self):
+        source = {
+            "type": f"{self.base_layer_type}",
+            "tiles": list(self.tiles.values_list('url', flat=True)),
+            "minzoom": self.min_zoom,
+            "maxzoom": self.max_zoom,
+            "attribution": self.attribution,
+        }
+
+        if self.base_layer_type == 'raster':
+            # only available for raster layers
+            source["tileSize"] = self.tile_size
+
+        return source
 
     @cached_property
     def tilejson(self):
         data = {
             "version": 8,
             "sources": {
-                f"{self.slug}": {
-                    "type": f"{self.base_layer_type}",
-                    "tiles": list(self.tiles.values_list('url', flat=True)),
-                    "minzoom": self.min_zoom,
-                    "maxzoom": self.max_zoom
-                }
+                f"{self.slug}": self.get_source(),
             },
             "layers": [
                 {"id": f"{self.slug}-background",
