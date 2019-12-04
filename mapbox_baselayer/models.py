@@ -74,7 +74,7 @@ class MapBaseLayer(models.Model):
 
     @cached_property
     def real_url(self):
-        if self.base_layer_type != 'mapbox':
+        if self.base_layer_type not in ('mapbox', 'vector'):
             return self.url
         else:
             return self.map_box_url.replace("mapbox://styles",

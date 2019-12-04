@@ -5,6 +5,8 @@ CHANGELOG
 0.0.4.dev0    (XXXX-XX-XX)
 --------------------------
 
+* Allow using map_box_url to store vector external json
+
 
 0.0.3         (2019-12-03)
 --------------------------
