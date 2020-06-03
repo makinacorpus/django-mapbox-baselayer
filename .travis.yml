@@ -58,7 +58,7 @@ jobs:
     after_success: skip
 
   - stage: deploy
-    install: pip install django  # install django for compiling messages
+    install: pip install .  # install django for compiling messages
     before_script: skip
     script: ./manage.py compilemessages  # compile messages
     after_script: skip
