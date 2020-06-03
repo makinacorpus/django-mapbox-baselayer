@@ -19,10 +19,10 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 msgid "MapBox Utils"
-msgstr "MapBox utilitaires"
+msgstr "Utilitaires MapBox"
 
 msgid "Raster tile size. Set 256 for 3rd party raster tilesets."
 msgstr ""
 
 msgid "Map base layers"
-msgstr "Fonds de plan de cartes"
+msgstr "Fonds de plan des cartes"
