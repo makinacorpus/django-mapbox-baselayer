@@ -22,7 +22,7 @@ msgid "MapBox Utils"
 msgstr ""
 
 msgid "Raster tile size. Set 256 for 3rd party raster tilesets."
-msgstr "Taille des tuiles raster. Utiliser la valeur 256 pour la plupart des tuiles raster."
+msgstr ""
 
 msgid "Map base layers"
-msgstr "Fonds de plan de carte"
+msgstr ""
