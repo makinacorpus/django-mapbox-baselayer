@@ -3,3 +3,38 @@
 
 
 Django model and view to store, generate and serve configuration for MapBox GL JS map base layer
+
+
+# Getting started
+### Installation
+Install it in your project like any dependency
+```
+pip install django-mapbox-baselayer
+```
+
+### Usage
+Declare django-mapbox-baselayer in the `INSTALLED_APPS`
+```py
+# settings.py
+
+INSTALLED_APPS  = [
+    # ... other django apps
+    "mapbox_baselayer",
+]
+```
+
+/!\ Note: for now, the apps is not registered in the admin. But you can register it in your project if you want to use it
+```py
+# admin.py
+
+from django.contrib import admin
+from mapbox_baselayer.admin import MapBaseLayerAdmin
+from mapbox_baselayer.models import MapBaseLayer, BaseLayerTile
+
+admin.site.register(MapBaseLayer, MapBaseLayerAdmin)
+admin.site.register(BaseLayerTile)
+```
+
+For mapbox layer, you do not need to describe the tiles with the `BaseLayerTile` object, but an url is mandatory. For raster, is it necessary to create a `BaseLayerTile` for each url (`a.tiles.xxx`, `b.tiles.xxx`, etc ...)
+
+Tile size should be 256 for raster and 512 for vector.
