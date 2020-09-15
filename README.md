@@ -29,10 +29,9 @@ INSTALLED_APPS  = [
 
 from django.contrib import admin
 from mapbox_baselayer.admin import MapBaseLayerAdmin
-from mapbox_baselayer.models import MapBaseLayer, BaseLayerTile
+from mapbox_baselayer.models import MapBaseLayer
 
 admin.site.register(MapBaseLayer, MapBaseLayerAdmin)
-admin.site.register(BaseLayerTile)
 ```
 
 For mapbox layer, you do not need to describe the tiles with the `BaseLayerTile` object, but an url is mandatory. For raster, is it necessary to create a `BaseLayerTile` for each url (`a.tiles.xxx`, `b.tiles.xxx`, etc ...)
