@@ -60,8 +60,7 @@ class MapBaseLayer(models.Model):
         if self.sprite:
             data["sprite"] = self.sprite
 
-        if self.glyphs:
-            data["glyphs"] = self.glyphs
+        data["glyphs"] = self.glyphs or "mapbox://fonts/mapbox/{fontstack}/{range}.pbf"
 
         return data
 

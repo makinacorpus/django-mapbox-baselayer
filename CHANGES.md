@@ -5,6 +5,7 @@ CHANGELOG
 0.0.7.dev0    (XXXX-XX-XX)
 --------------------------
 
+* Set default mapbox glyphs to avoid map style problems on raster based layer
 
 0.0.6         (2020-09-09)
 --------------------------
