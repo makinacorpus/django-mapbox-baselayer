@@ -6,8 +6,7 @@ language: python
 
 python:
 - '3.6'
-- '3.7'
-- '3.8'
+- '3.9'
 
 stages:
 - lint
@@ -17,7 +16,6 @@ stages:
 env:
   matrix:
     - DJANGO_VERSION=2.2.*
-    - DJANGO_VERSION=3.0.*
     - DJANGO_VERSION=3.1.*
     - DJANGO_VERSION=dev
 
@@ -43,9 +41,7 @@ jobs:
   allow_failures:
     - python: 3.6
       env: DJANGO_VERSION=dev
-    - python: 3.7
-      env: DJANGO_VERSION=dev
-    - python: 3.8
+    - python: 3.9
       env: DJANGO_VERSION=dev
 
   include:
