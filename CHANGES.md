@@ -5,6 +5,7 @@ CHANGELOG
 0.0.7.dev0    (XXXX-XX-XX)
 --------------------------
 
+* Admin is now registered by default. Delete enabling code in your project.
 * Set default mapbox glyphs to avoid map style problems on raster based layer
 * Add commands to create OSM and OpenTopoMap base layers
 

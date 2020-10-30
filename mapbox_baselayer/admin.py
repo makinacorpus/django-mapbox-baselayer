@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from . import models
 
 
@@ -7,6 +8,7 @@ class TileInLine(admin.StackedInline):
     extra = 0
 
 
+@admin.register(models.MapBaseLayer)
 class MapBaseLayerAdmin(admin.ModelAdmin):
     list_display = ('pk', 'name', 'slug')
     inlines = [TileInLine, ]
