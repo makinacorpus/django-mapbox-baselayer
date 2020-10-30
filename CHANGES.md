@@ -6,6 +6,7 @@ CHANGELOG
 --------------------------
 
 * Set default mapbox glyphs to avoid map style problems on raster based layer
+* Add commands to create OSM and OpenTopoMap base layers
 
 0.0.6         (2020-09-09)
 --------------------------
