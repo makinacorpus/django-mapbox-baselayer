@@ -2,7 +2,7 @@
 CHANGELOG
 =========
 
-0.0.7.dev0    (XXXX-XX-XX)
+0.0.7         (2020-10-30)
 --------------------------
 
 * Admin is now registered by default. Delete enabling code in your project.
