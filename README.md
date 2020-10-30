@@ -23,22 +23,9 @@ INSTALLED_APPS  = [
 ]
 ```
 
-/!\ Note: for now, the apps is not registered in the admin. But you can register it in your project if you want to use it
+For Mapbox base layers, you do not need to describe the tiles with the `BaseLayerTile` object, but an url is mandatory.
 
-
-```python
-# admin.py
-
-from django.contrib import admin
-from mapbox_baselayer.admin import MapBaseLayerAdmin
-from mapbox_baselayer.models import MapBaseLayer
-
-admin.site.register(MapBaseLayer, MapBaseLayerAdmin)
-```
-
-For mapbox layers, you do not need to describe the tiles with the `BaseLayerTile` object, but an url is mandatory.
-
-For raster layers, is it necessary to create a `BaseLayerTile` for each url (`a.tiles.xxx`, `b.tiles.xxx`, etc ...)
+For Raster base layers, is it necessary to create a `BaseLayerTile` for each url (`a.tiles.xxx`, `b.tiles.xxx`, etc ...)
 
 Tile size should be 256 for raster and 512 for vector.
 
