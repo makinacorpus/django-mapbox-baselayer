@@ -1,12 +1,11 @@
-=========
 CHANGELOG
 =========
 
-0.0.8.dev0    (XXXX-XX-XX)
+0.0.8         (2020-11-03)
 --------------------------
 
 * Add command to create Mapbox layer
-* Add command to create differents IGN layers
+* Add command to create different IGN layers
 
 0.0.7         (2020-10-30)
 --------------------------
