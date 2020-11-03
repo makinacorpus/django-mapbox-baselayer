@@ -31,3 +31,21 @@ class InstallOSMCommand(TestCase):
         self.assertEqual(len(tiles), 3)
 
         self.assertEqual(len(set(tiles.values_list('url', flat=True))), 3)
+
+
+class InstallMapboxCommand(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        call_command('install_mapbox_baselayer')
+
+    def test_without_arguments(self):
+        self.assertTrue(MapBaseLayer.objects.filter(name="Mapbox").exists())
+
+
+class InstallIGNCommand(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        call_command('install_ign_baselayer', 'mykey', 'ortho')
+
+    def test_base_layer_is_present(self):
+        self.assertTrue(MapBaseLayer.objects.filter(name="IGN ortho").exists())
