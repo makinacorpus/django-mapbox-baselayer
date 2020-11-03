@@ -42,3 +42,16 @@ Tile size should be 256 for raster and 512 for vector.
 ```bash
 ./manage.py install_opentopomap_baselayer
 ```
+
+#### Mapbox base layer
+
+```bash
+./manage.py install_mapbox_baselayer (use mapbox://styles/mapbox/streets-v11 as default)
+./manage.py install_mapbox_baselayer --mapbox-url=mapbox://styles/mapbox/satellite-streets-v11
+```
+
+#### IGN base layer
+
+```bash
+./manage.py install_ign_baselayer _your_api_key_ ortho,cadastre
+```
