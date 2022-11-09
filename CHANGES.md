@@ -4,6 +4,9 @@ CHANGELOG
 0.0.9.dev0    (XXXX-XX-XX)
 --------------------------
 
+* Support django 3.2, 4.0 and 4.1
+* Support python 3.10
+
 
 0.0.8         (2020-11-03)
 --------------------------
