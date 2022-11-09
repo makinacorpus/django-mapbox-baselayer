@@ -4,6 +4,7 @@ CHANGELOG
 0.0.9.dev0    (XXXX-XX-XX)
 --------------------------
 
+* Improve install_ign_baselayer command. Add Plan IGN V2 and fix multi layer import.
 * Support django 3.2, 4.0 and 4.1
 * Support python 3.10
 

@@ -45,7 +45,7 @@ class InstallMapboxCommand(TestCase):
 class InstallIGNCommand(TestCase):
     @classmethod
     def setUpTestData(cls):
-        call_command('install_ign_baselayer', 'mykey', 'ortho')
+        call_command('install_ign_baselayer', 'mykey', '--layers', 'ortho')
 
     def test_base_layer_is_present(self):
         self.assertTrue(MapBaseLayer.objects.filter(name="IGN ortho").exists())

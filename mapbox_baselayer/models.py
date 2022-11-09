@@ -15,7 +15,7 @@ class MapBaseLayer(models.Model):
     order = models.PositiveSmallIntegerField(default=0)
     slug = models.SlugField(unique=True, editable=False)
     base_layer_type = models.CharField(max_length=25, choices=BASE_LAYER_TYPES, db_index=True, blank=False)
-    map_box_url = models.CharField(max_length=255, blank=True)  # required for mapbox
+    map_box_url = models.CharField(max_length=255, blank=True, help_text=_("Mapbox or tilejson URL, starting "))
     sprite = models.CharField(max_length=255, blank=True)
     glyphs = models.CharField(max_length=255, blank=True)
     min_zoom = models.PositiveSmallIntegerField(default=0)
