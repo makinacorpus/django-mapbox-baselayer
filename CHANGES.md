@@ -1,7 +1,7 @@
 CHANGELOG
 =========
 
-0.0.9.dev0    (XXXX-XX-XX)
+0.0.9         (2022-11-09)
 --------------------------
 
 * Improve install_ign_baselayer command. Add Plan IGN V2 and fix multi layer import.
