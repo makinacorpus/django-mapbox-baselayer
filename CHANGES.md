@@ -4,6 +4,7 @@ CHANGELOG
 0.0.9+dev     (XXXX-XX-XX)
 --------------------------
 
+* Increase attribution size to 1024 chars.
 * Support django 4.2, drop django 2.2
 * Support python 3.11
 
