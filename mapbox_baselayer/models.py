@@ -23,7 +23,7 @@ class MapBaseLayer(models.Model):
     tile_size = models.PositiveSmallIntegerField(
         default=512, help_text=_("Raster tile size. Set 256 for 3rd party raster tilesets.")
     )
-    attribution = models.CharField(max_length=255, blank=True, default="")
+    attribution = models.CharField(max_length=1024, blank=True, default="")
 
     def __str__(self):
         return self.name
