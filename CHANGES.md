@@ -1,7 +1,7 @@
 CHANGELOG
 =========
 
-0.0.9+dev     (XXXX-XX-XX)
+1.0.0         (2023-07-11)
 --------------------------
 
 * Increase attribution size to 1024 chars.
