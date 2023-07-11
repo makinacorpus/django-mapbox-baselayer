@@ -4,6 +4,9 @@ CHANGELOG
 0.0.9+dev     (XXXX-XX-XX)
 --------------------------
 
+* Support django 4.2, drop django 2.2
+* Support python 3.11
+
 
 0.0.9         (2022-11-09)
 --------------------------
