@@ -3,12 +3,11 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-02 18:46+0000\n"
+"POT-Creation-Date: 2026-02-06 16:09+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,8 +20,26 @@ msgstr ""
 msgid "MapBox Utils"
 msgstr "Utilitaires MapBox"
 
+msgid "Is overlay"
+msgstr "Est une sur-couche"
+
+msgid "Mapbox or tilejson URL"
+msgstr "URL d'un style mapbox ou d'un tilejson"
+
 msgid "Raster tile size. Set 256 for 3rd party raster tilesets."
-msgstr ""
+msgstr "Taille de tuile raster. Mettre 256 pour les tuiles raster de tiers."
 
 msgid "Map base layers"
 msgstr "Fonds de plan des cartes"
+
+msgid "Base layer"
+msgstr "Fond de plan de cartes"
+
+msgid "Base layers"
+msgstr "Fonds de plan des cartes"
+
+msgid "Overlay layer"
+msgstr "Sur-couche de cartes"
+
+msgid "Overlay layers"
+msgstr "Sur-couches des cartes"

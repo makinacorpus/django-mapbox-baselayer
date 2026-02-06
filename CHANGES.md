@@ -4,9 +4,22 @@ CHANGELOG
 1.0.0+dev     (XXXX-XX-XX)
 --------------------------
 
+**New features**
+
+* Add overlays concept to allow adding layers on top of baselayers. This is useful for example to add a layer with markers on top of a baselayer.
+* Add JSON endpoint to get baselayer data. This is useful for example to get the real url of a mapbox style.
+
+**Improvements**
+
+* Add example view
+
+
+**Maintenance**
+
 * Drop official support for python <= 3.9
 * Add official support for python 3.13
 * Add official support for python 5.2 and 6.0
+
 
 1.0.0         (2023-07-11)
 --------------------------

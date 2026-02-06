@@ -1,10 +1,9 @@
 from django.core.management import BaseCommand
-from django.utils.translation import gettext_lazy as _
 from mapbox_baselayer.models import MapBaseLayer, BaseLayerTile
 
 
 class Command(BaseCommand):
-    help = _("Install an OSM base layer")
+    help = "Install an OSM base layer"
 
     def handle(self, *args, **options):
         base_layer = MapBaseLayer.objects.create(
@@ -20,4 +19,4 @@ class Command(BaseCommand):
             BaseLayerTile(base_layer=base_layer, url="//b.tile.openstreetmap.org/{z}/{x}/{y}.png"),
             BaseLayerTile(base_layer=base_layer, url="//c.tile.openstreetmap.org/{z}/{x}/{y}.png"),
         ])
-        self.stdout.write(self.style.SUCCESS(_("OSM base layer has been created.")))
+        self.stdout.write(self.style.SUCCESS("OSM base layer has been created."))

@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
             name="map_box_url",
             field=models.CharField(
                 blank=True,
-                help_text="Mapbox or tilejson URL, starting ",
+                help_text="Mapbox or tilejson URL",
                 max_length=255,
             ),
         ),

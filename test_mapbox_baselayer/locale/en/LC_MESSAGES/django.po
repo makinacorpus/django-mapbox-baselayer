@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-06 16:09+0000\n"
+"POT-Creation-Date: 2026-02-06 16:07+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,29 +18,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "MapBox Utils"
+msgid "MapLibre GL JS Example"
 msgstr ""
 
-msgid "Is overlay"
+msgid "Base layers:"
 msgstr ""
 
-msgid "Mapbox or tilejson URL"
+msgid "Loading..."
 msgstr ""
 
-msgid "Raster tile size. Set 256 for 3rd party raster tilesets."
+msgid "Overlays:"
 msgstr ""
 
-msgid "Map base layers"
+msgid "Loading error"
 msgstr ""
 
-msgid "Base layer"
+msgid "No base layer available."
 msgstr ""
 
-msgid "Base layers"
-msgstr ""
-
-msgid "Overlay layer"
-msgstr ""
-
-msgid "Overlay layers"
+msgid "No overlay available."
 msgstr ""

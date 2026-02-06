@@ -1,0 +1,226 @@
+{% load i18n %}
+<!DOCTYPE html>
+{% get_current_language as lang %}
+<html lang="{{ lang }}">
+<head>
+    <meta charset="utf-8"/>
+    <title>{% trans "MapLibre GL JS Example" %}</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no"/>
+    <script src="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css" rel="stylesheet"/>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .layer-selector {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1;
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .layer-selector h4 {
+            margin: 0 0 8px 0;
+        }
+
+        .layer-selector hr {
+            margin: 10px 0;
+        }
+
+        .layer-item {
+            margin: 4px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<div class="layer-selector">
+    <h4>{% trans "Base layers:" %}</h4>
+    <div id="base-layers-container">
+        {% trans "Loading..." %}
+    </div>
+    <hr>
+    <h4>{% trans "Overlays:" %}</h4>
+    <div id="overlay-layers-container">
+        {% trans "Loading..." %}
+    </div>
+</div>
+
+<script>
+    const defaultStyle = 'https://demotiles.maplibre.org/style.json';
+    let map;
+    let currentBaseLayerUrl = null;
+    let activeOverlays = {};
+
+    // Initialize map with default style
+    map = new maplibregl.Map({
+        container: 'map',
+        style: defaultStyle,
+        center: [2.3522, 48.8566], // Paris
+        zoom: 12
+    });
+
+    map.addControl(new maplibregl.NavigationControl());
+
+    // Fetch layers from API
+    fetch('{% url "mapbox_baselayer:baselayer-list" %}')
+        .then(response => response.json())
+        .then(data => {
+            renderBaseLayers(data.base_layers);
+            renderOverlayLayers(data.overlay_layers);
+
+            // Set initial base layer if available
+            if (data.base_layers.length > 0) {
+                const firstLayer = data.base_layers[0];
+                currentBaseLayerUrl = firstLayer.url;
+                map.setStyle(firstLayer.url);
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching layers:', error);
+            document.getElementById('base-layers-container').innerHTML = '{% trans "Loading error" %}';
+            document.getElementById('overlay-layers-container').innerHTML = '{% trans "Loading error" %}';
+        });
+
+    function renderBaseLayers(baseLayers) {
+        const container = document.getElementById('base-layers-container');
+
+        if (baseLayers.length === 0) {
+            container.innerHTML = '{% trans "No base layer available." %}';
+            return;
+        }
+
+        container.innerHTML = '';
+        baseLayers.forEach((layer, index) => {
+            const div = document.createElement('div');
+            div.className = 'layer-item';
+
+            const input = document.createElement('input');
+            input.type = 'radio';
+            input.id = `base-layer-${layer.slug}`;
+            input.name = 'baselayer';
+            input.value = layer.url;
+            if (index === 0) input.checked = true;
+
+            input.addEventListener('change', (e) => {
+                currentBaseLayerUrl = e.target.value;
+                applyStyles();
+            });
+
+            const label = document.createElement('label');
+            label.htmlFor = `base-layer-${layer.slug}`;
+            label.textContent = ' ' + layer.name;
+
+            div.appendChild(input);
+            div.appendChild(label);
+            container.appendChild(div);
+        });
+    }
+
+    function renderOverlayLayers(overlayLayers) {
+        const container = document.getElementById('overlay-layers-container');
+
+        if (overlayLayers.length === 0) {
+            container.innerHTML = '{% trans "No overlay available." %}';
+            return;
+        }
+
+        container.innerHTML = '';
+        overlayLayers.forEach(layer => {
+            const div = document.createElement('div');
+            div.className = 'layer-item';
+
+            const input = document.createElement('input');
+            input.type = 'checkbox';
+            input.id = `overlay-layer-${layer.slug}`;
+            input.value = layer.url;
+            input.dataset.slug = layer.slug;
+
+            input.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    activeOverlays[layer.slug] = layer.url;
+                } else {
+                    delete activeOverlays[layer.slug];
+                }
+                applyStyles();
+            });
+
+            const label = document.createElement('label');
+            label.htmlFor = `overlay-layer-${layer.slug}`;
+            label.textContent = ' ' + layer.name;
+
+            div.appendChild(input);
+            div.appendChild(label);
+            container.appendChild(div);
+        });
+    }
+
+    async function applyStyles() {
+        if (!currentBaseLayerUrl) {
+            map.setStyle(defaultStyle);
+            return;
+        }
+
+        // Fetch base layer style
+        let baseStyle;
+        try {
+            const response = await fetch(currentBaseLayerUrl);
+            baseStyle = await response.json();
+        } catch (error) {
+            console.error('Error fetching base style:', error);
+            return;
+        }
+
+        // If no overlays, just apply base style
+        if (Object.keys(activeOverlays).length === 0) {
+            map.setStyle(baseStyle);
+            return;
+        }
+
+        // Merge overlay styles into base style
+        const mergedStyle = JSON.parse(JSON.stringify(baseStyle));
+
+        for (const [slug, url] of Object.entries(activeOverlays)) {
+            try {
+                const response = await fetch(url);
+                const overlayStyle = await response.json();
+
+                // Merge sources
+                if (overlayStyle.sources) {
+                    for (const [sourceId, source] of Object.entries(overlayStyle.sources)) {
+                        mergedStyle.sources[sourceId] = source;
+                    }
+                }
+
+                // Append layers
+                if (overlayStyle.layers) {
+                    mergedStyle.layers = mergedStyle.layers.concat(overlayStyle.layers);
+                }
+            } catch (error) {
+                console.error(`Error fetching overlay style for ${slug}:`, error);
+            }
+        }
+
+        map.setStyle(mergedStyle);
+    }
+</script>
+
+</body>
+</html>

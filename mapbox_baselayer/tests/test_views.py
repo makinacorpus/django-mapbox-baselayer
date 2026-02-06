@@ -49,3 +49,31 @@ class MapBaseLayerViewTestCase(TestCase):
         self.maxDiff = None
         response = self.client.get(reverse('mapbox_baselayer:tilejson', args=(self.mapbox_base_layer.pk,)))
         self.assertEqual(response.status_code, 404)
+
+    def test_example_view(self):
+        response = self.client.get(reverse('example'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'test_app/map_example.html')
+        # Layers are now fetched via JavaScript fetch() call to the API
+        self.assertContains(response, '/mapbox-baselayers/')
+
+    def test_baselayer_list_view(self):
+        # Add an overlay layer
+        MapBaseLayer.objects.create(
+            name='Overlay layer',
+            base_layer_type='raster',
+            is_overlay=True,
+            order=1
+        )
+        response = self.client.get(reverse('mapbox_baselayer:baselayer-list'))
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn('base_layers', data)
+        self.assertIn('overlay_layers', data)
+        self.assertEqual(len(data['base_layers']), 2)
+        self.assertEqual(len(data['overlay_layers']), 1)
+        self.assertEqual(data['overlay_layers'][0]['name'], 'Overlay layer')
+
+        # Check ordering
+        self.assertEqual(data['base_layers'][0]['name'], 'Mapbox layer')  # order=0
+        self.assertEqual(data['base_layers'][1]['name'], 'Raster layer')  # order=0, but 'M' < 'R'

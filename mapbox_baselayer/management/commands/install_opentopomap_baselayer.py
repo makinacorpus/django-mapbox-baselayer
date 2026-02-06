@@ -1,10 +1,9 @@
 from django.core.management import BaseCommand
-from django.utils.translation import gettext_lazy as _
 from mapbox_baselayer.models import MapBaseLayer, BaseLayerTile
 
 
 class Command(BaseCommand):
-    help = _("Install an OpenTopoMap base layer")
+    help = "Install an OpenTopoMap base layer"
 
     def handle(self, *args, **options):
         base_layer = MapBaseLayer.objects.create(
@@ -23,4 +22,4 @@ class Command(BaseCommand):
             BaseLayerTile(base_layer=base_layer, url="//b.tile.opentopomap.org/{z}/{x}/{y}.png"),
             BaseLayerTile(base_layer=base_layer, url="//c.tile.opentopomap.org/{z}/{x}/{y}.png"),
         ])
-        self.stdout.write(self.style.SUCCESS(_("OpenTopoMap base layer has been created.")))
+        self.stdout.write(self.style.SUCCESS("OpenTopoMap base layer has been created."))
