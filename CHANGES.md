@@ -4,6 +4,11 @@ CHANGELOG
 1.0.0+dev     (XXXX-XX-XX)
 --------------------------
 
+**New features**
+
+* Add overlays concept to allow adding layers on top of baselayers. This is useful for example to add a layer with markers on top of a baselayer.
+* Add JSON endpoint to get baselayer data. This is useful for example to get the real url of a mapbox style.
+
 **Improvements**
 
 * Add example view

@@ -12,7 +12,8 @@ class MapBaseLayer(models.Model):
         ('vector', 'Vector'),
     )
     name = models.CharField(max_length=50, unique=True)
-    order = models.PositiveSmallIntegerField(default=0)
+    is_overlay = models.BooleanField(default=False, verbose_name=_("Is overlay"))
+    order = models.PositiveIntegerField(default=0)
     slug = models.SlugField(unique=True, editable=False)
     base_layer_type = models.CharField(max_length=25, choices=BASE_LAYER_TYPES, db_index=True, blank=False)
     map_box_url = models.CharField(max_length=255, blank=True, help_text=_("Mapbox or tilejson URL, starting "))
@@ -87,7 +88,7 @@ class MapBaseLayer(models.Model):
         verbose_name = _("Map base layers")
         verbose_name_plural = _("Map base layers")
         ordering = (
-            'order', 'name'
+            'is_overlay', 'order', 'name'
         )
 
 
