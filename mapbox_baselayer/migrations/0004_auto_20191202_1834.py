@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('mapbox_baselayer', '0003_auto_20191202_0937'),
+        ("mapbox_baselayer", "0003_auto_20191202_0937"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='mapbaselayer',
-            name='attribution',
-            field=models.CharField(blank=True, default='', max_length=255),
+            model_name="mapbaselayer",
+            name="attribution",
+            field=models.CharField(blank=True, default="", max_length=255),
         ),
         migrations.AddField(
-            model_name='mapbaselayer',
-            name='tile_size',
+            model_name="mapbaselayer",
+            name="tile_size",
             field=models.PositiveSmallIntegerField(default=512),
         ),
     ]

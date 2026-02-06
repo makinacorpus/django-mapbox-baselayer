@@ -13,12 +13,14 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import include, path
+
 from test_mapbox_baselayer.test_app.views import MapExampleView
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', MapExampleView.as_view(), name='example'),
-    path('', include('mapbox_baselayer.urls', namespace='mapbox_baselayer'))
+    path("admin/", admin.site.urls),
+    path("", MapExampleView.as_view(), name="example"),
+    path("", include("mapbox_baselayer.urls", namespace="mapbox_baselayer")),
 ]

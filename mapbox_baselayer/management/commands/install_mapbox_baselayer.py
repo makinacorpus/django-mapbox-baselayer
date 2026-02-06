@@ -1,4 +1,5 @@
 from django.core.management import BaseCommand
+
 from mapbox_baselayer.models import MapBaseLayer
 
 
@@ -7,10 +8,10 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--mapbox-url',
-            action='store',
-            help='Mapbox url to use',
-            default='mapbox://styles/mapbox/streets-v11'
+            "--mapbox-url",
+            action="store",
+            help="Mapbox url to use",
+            default="mapbox://styles/mapbox/streets-v11",
         )
 
     def handle(self, *args, **options):
@@ -20,7 +21,7 @@ class Command(BaseCommand):
             tile_size=512,
             min_zoom=0,
             max_zoom=22,
-            attribution='© Mapbox',
-            map_box_url=options.get('mapbox_url')
+            attribution="© Mapbox",
+            map_box_url=options.get("mapbox_url"),
         )
         self.stdout.write(self.style.SUCCESS("Mapbox base layer has been created."))

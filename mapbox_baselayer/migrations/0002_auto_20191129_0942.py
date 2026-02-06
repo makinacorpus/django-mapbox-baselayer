@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('mapbox_baselayer', '0001_initial'),
+        ("mapbox_baselayer", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='baselayertile',
-            name='url',
+            model_name="baselayertile",
+            name="url",
             field=models.CharField(max_length=512),
         ),
     ]

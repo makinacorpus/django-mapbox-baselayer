@@ -8,6 +8,10 @@ CHANGELOG
 
 * mapbox url is now labeled as "Style url".
 
+**Development**
+
+* Use ruff instead of flake / black / isort
+
 
 1.1.0         (2026-02-06)
 --------------------------
