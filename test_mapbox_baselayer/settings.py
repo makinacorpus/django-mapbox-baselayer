@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'mapbox_baselayer',
+    'test_mapbox_baselayer.test_app',
 ]
 
 MIDDLEWARE = [

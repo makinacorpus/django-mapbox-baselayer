@@ -49,3 +49,10 @@ class MapBaseLayerViewTestCase(TestCase):
         self.maxDiff = None
         response = self.client.get(reverse('mapbox_baselayer:tilejson', args=(self.mapbox_base_layer.pk,)))
         self.assertEqual(response.status_code, 404)
+
+    def test_example_view(self):
+        response = self.client.get(reverse('example'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'test_app/map_example.html')
+        self.assertIn('base_layers', response.context)
+        self.assertEqual(len(response.context['base_layers']), 2)

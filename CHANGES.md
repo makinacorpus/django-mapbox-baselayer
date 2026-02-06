@@ -4,9 +4,17 @@ CHANGELOG
 1.0.0+dev     (XXXX-XX-XX)
 --------------------------
 
+**Improvements**
+
+* Add example view
+
+
+**Maintenance**
+
 * Drop official support for python <= 3.9
 * Add official support for python 3.13
 * Add official support for python 5.2 and 6.0
+
 
 1.0.0         (2023-07-11)
 --------------------------

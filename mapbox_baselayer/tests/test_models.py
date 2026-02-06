@@ -31,3 +31,13 @@ class MapBaseLayerTEstCase(TestCase):
         self.assertEqual(self.raster_base_layer.url,
                          reverse('mapbox_baselayer:tilejson',
                                  args=(self.raster_base_layer.pk, )))
+
+    def test_ordering(self):
+        MapBaseLayer.objects.all().delete()
+        layer_c = MapBaseLayer.objects.create(name='C', order=2, base_layer_type='mapbox')
+        layer_a2 = MapBaseLayer.objects.create(name='A2', order=1, base_layer_type='mapbox')
+        layer_a1 = MapBaseLayer.objects.create(name='A1', order=1, base_layer_type='mapbox')
+        layer_b = MapBaseLayer.objects.create(name='B', order=1, base_layer_type='mapbox')
+
+        layers = list(MapBaseLayer.objects.all())
+        self.assertEqual(layers, [layer_a1, layer_a2, layer_b, layer_c])

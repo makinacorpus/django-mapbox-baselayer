@@ -15,8 +15,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from test_mapbox_baselayer.test_app.views import MapExampleView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', MapExampleView.as_view(), name='example'),
     path('', include('mapbox_baselayer.urls', namespace='mapbox_baselayer'))
 ]

@@ -10,5 +10,5 @@ class TileInLine(admin.StackedInline):
 
 @admin.register(models.MapBaseLayer)
 class MapBaseLayerAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'name', 'slug')
+    list_display = ('name', 'slug', 'order')
     inlines = [TileInLine, ]

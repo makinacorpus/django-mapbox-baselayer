@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>MapLibre GL JS Example</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <script src="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css" rel="stylesheet" />
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        .layer-selector {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1;
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<div class="layer-selector">
+    <strong>Fonds de plan :</strong><br>
+    {% for layer in base_layers %}
+        <input type="radio" id="layer-{{ layer.id }}" name="baselayer" value="{{ layer.real_url }}" {% if forloop.first %}checked{% endif %}>
+        <label for="layer-{{ layer.id }}">{{ layer.name }}</label><br>
+    {% empty %}
+        Aucun fond de plan disponible.
+    {% endfor %}
+</div>
+
+<script>
+    const inputs = document.querySelectorAll('input[name="baselayer"]');
+    let initialStyle = 'https://demotiles.maplibre.org/style.json'; // Default style if no layers
+
+    if (inputs.length > 0) {
+        initialStyle = document.querySelector('input[name="baselayer"]:checked').value;
+    }
+
+    const map = new maplibregl.Map({
+        container: 'map',
+        style: initialStyle,
+        center: [2.3522, 48.8566], // Paris
+        zoom: 12
+    });
+
+    inputs.forEach(input => {
+        input.addEventListener('change', (e) => {
+            map.setStyle(e.target.value);
+        });
+    });
+
+    map.addControl(new maplibregl.NavigationControl());
+</script>
+
+</body>
+</html>
