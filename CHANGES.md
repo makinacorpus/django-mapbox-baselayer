@@ -1,12 +1,12 @@
 CHANGELOG
 =========
 
-1.1.0         (XXXX-XX-XX)
+1.2.0         (XXXX-XX-XX)
 --------------------------
 
 **Improvements**
 
-* mapbox url is now labeled as "Style url".
+* mapbox url is now labeled as "Style URL".
 
 
 1.1.0         (2026-02-06)
