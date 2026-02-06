@@ -40,7 +40,9 @@ INSTALLED_APPS = [
     'mapbox_baselayer',
     'test_mapbox_baselayer.test_app',
 ]
-
+LOCALE_DIRS = [
+    os.path.join(BASE_DIR, 'locale'),
+]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.locale.LocaleMiddleware',

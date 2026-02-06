@@ -8,9 +8,18 @@ class TileInLine(admin.StackedInline):
     extra = 0
 
 
-@admin.register(models.MapBaseLayer)
-class MapBaseLayerAdmin(admin.ModelAdmin):
-    list_display = ('name', 'slug', 'is_overlay', 'order')
-    list_filter = ('is_overlay',)
+class BaseMapLayerAdmin(admin.ModelAdmin):
+    list_display = ('name', 'slug', 'order')
     search_fields = ('name', 'slug')
     inlines = [TileInLine, ]
+    exclude = ('is_overlay',)
+
+
+@admin.register(models.BaseLayer)
+class BaseLayerAdmin(BaseMapLayerAdmin):
+    pass
+
+
+@admin.register(models.OverlayLayer)
+class OverlayLayerAdmin(BaseMapLayerAdmin):
+    pass

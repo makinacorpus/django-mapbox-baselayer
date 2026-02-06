@@ -1,10 +1,9 @@
 from django.core.management import BaseCommand
-from django.utils.translation import gettext_lazy as _
 from mapbox_baselayer.models import MapBaseLayer
 
 
 class Command(BaseCommand):
-    help = _("Install a MapBox base layer")
+    help = "Install a MapBox base layer"
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -24,4 +23,4 @@ class Command(BaseCommand):
             attribution='© Mapbox',
             map_box_url=options.get('mapbox_url')
         )
-        self.stdout.write(self.style.SUCCESS(_("Mapbox base layer has been created.")))
+        self.stdout.write(self.style.SUCCESS("Mapbox base layer has been created."))

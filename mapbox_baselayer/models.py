@@ -16,7 +16,7 @@ class MapBaseLayer(models.Model):
     order = models.PositiveIntegerField(default=0)
     slug = models.SlugField(unique=True, editable=False)
     base_layer_type = models.CharField(max_length=25, choices=BASE_LAYER_TYPES, db_index=True, blank=False)
-    map_box_url = models.CharField(max_length=255, blank=True, help_text=_("Mapbox or tilejson URL, starting "))
+    map_box_url = models.CharField(max_length=255, blank=True, help_text=_("Mapbox or tilejson URL"))
     sprite = models.CharField(max_length=255, blank=True)
     glyphs = models.CharField(max_length=255, blank=True)
     min_zoom = models.PositiveSmallIntegerField(default=0)
@@ -90,6 +90,44 @@ class MapBaseLayer(models.Model):
         ordering = (
             'is_overlay', 'order', 'name'
         )
+
+
+class BaseLayerManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_overlay=False)
+
+
+class OverlayLayerManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_overlay=True)
+
+
+class BaseLayer(MapBaseLayer):
+    """Proxy model for base layers (is_overlay=False)"""
+    objects = BaseLayerManager()
+
+    class Meta:
+        proxy = True
+        verbose_name = _("Base layer")
+        verbose_name_plural = _("Base layers")
+
+    def save(self, *args, **kwargs):
+        self.is_overlay = False
+        super().save(*args, **kwargs)
+
+
+class OverlayLayer(MapBaseLayer):
+    """Proxy model for overlay layers (is_overlay=True)"""
+    objects = OverlayLayerManager()
+
+    class Meta:
+        proxy = True
+        verbose_name = _("Overlay layer")
+        verbose_name_plural = _("Overlay layers")
+
+    def save(self, *args, **kwargs):
+        self.is_overlay = True
+        super().save(*args, **kwargs)
 
 
 class BaseLayerTile(models.Model):

@@ -1,10 +1,9 @@
 from django.core.management import BaseCommand, CommandError
-from django.utils.translation import gettext_lazy as _
 from mapbox_baselayer.models import MapBaseLayer, BaseLayerTile
 
 
 class Command(BaseCommand):
-    help = _("Install an IGN base layer")
+    help = "Install an IGN base layer"
     layers = {
         'ortho': {"name": 'ORTHOIMAGERY.ORTHOPHOTOS', 'format': 'jpeg'},
         'plan': {"name": "GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2", 'format': 'png'},
@@ -23,7 +22,7 @@ class Command(BaseCommand):
 
         for layer in options.get('layers'):
             if layer not in self.layers:
-                raise CommandError(_(f"'{layer}' is not a valid value. Should be '{', '.join(self.layers.keys())}'"))
+                raise CommandError(f"'{layer}' is not a valid value. Should be '{', '.join(self.layers.keys())}'")
 
         for layer in options.get('layers'):
             base_url = (
@@ -43,4 +42,4 @@ class Command(BaseCommand):
             BaseLayerTile.objects.bulk_create([
                 BaseLayerTile(base_layer=base_layer, url=base_url),
             ])
-        self.stdout.write(self.style.SUCCESS(_("IGN layer(s) created.")))
+        self.stdout.write(self.style.SUCCESS("IGN layer(s) created."))
