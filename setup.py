@@ -11,7 +11,7 @@ CHANGES = open(os.path.join(HERE, 'CHANGES.md')).read()
 
 tests_require = [
     'factory-boy',
-    'flake8',
+    'ruff',
     'coverage',
 ]
 
@@ -29,7 +29,6 @@ setup(
     url='https://github.com/makinacorpus/django-mapbox-baselayer.git',
     classifiers=[
         'Environment :: Web Environment',
-        'Framework :: Django',
         'Intended Audience :: Developers',
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',

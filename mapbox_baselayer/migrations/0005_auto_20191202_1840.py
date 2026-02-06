@@ -4,15 +4,17 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('mapbox_baselayer', '0004_auto_20191202_1834'),
+        ("mapbox_baselayer", "0004_auto_20191202_1834"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='mapbaselayer',
-            name='tile_size',
-            field=models.PositiveSmallIntegerField(default=512, help_text='Raster tile size. Set 256 for 3rd party raster tilesets.'),
+            model_name="mapbaselayer",
+            name="tile_size",
+            field=models.PositiveSmallIntegerField(
+                default=512,
+                help_text="Raster tile size. Set 256 for 3rd party raster tilesets.",
+            ),
         ),
     ]

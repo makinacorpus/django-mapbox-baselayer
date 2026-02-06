@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("mapbox_baselayer", "0005_auto_20191202_1840"),
     ]

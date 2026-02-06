@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("mapbox_baselayer", "0008_mapbaselayer_is_overlay_alter_mapbaselayer_order"),
     ]

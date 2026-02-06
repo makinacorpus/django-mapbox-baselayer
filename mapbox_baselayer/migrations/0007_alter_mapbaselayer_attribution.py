@@ -4,15 +4,17 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('mapbox_baselayer', '0006_alter_baselayertile_id_alter_mapbaselayer_id_and_more'),
+        (
+            "mapbox_baselayer",
+            "0006_alter_baselayertile_id_alter_mapbaselayer_id_and_more",
+        ),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='mapbaselayer',
-            name='attribution',
-            field=models.CharField(blank=True, default='', max_length=1024),
+            model_name="mapbaselayer",
+            name="attribution",
+            field=models.CharField(blank=True, default="", max_length=1024),
         ),
     ]
