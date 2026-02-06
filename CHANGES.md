@@ -4,6 +4,10 @@ CHANGELOG
 1.1.0         (XXXX-XX-XX)
 --------------------------
 
+**Improvements**
+
+* mapbox url is now labeled as "Style url".
+
 
 1.1.0         (2026-02-06)
 --------------------------

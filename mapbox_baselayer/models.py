@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import TextChoices
 from django.urls import reverse
 from django.utils.functional import cached_property
 from django.utils.text import slugify
@@ -6,16 +7,16 @@ from django.utils.translation import gettext_lazy as _
 
 
 class MapBaseLayer(models.Model):
-    BASE_LAYER_TYPES = (
-        ('mapbox', 'MapBox'),
-        ('raster', 'Raster'),
-        ('vector', 'Vector'),
-    )
+    class LayerType(TextChoices):
+        STYLE_URL = 'mapbox', _('Style URL')
+        RASTER = 'raster', _('Raster tiles')
+        VECTOR = 'vector', _('Vector tiles')
+
     name = models.CharField(max_length=50, unique=True)
     is_overlay = models.BooleanField(default=False, verbose_name=_("Is overlay"))
     order = models.PositiveIntegerField(default=0)
     slug = models.SlugField(unique=True, editable=False)
-    base_layer_type = models.CharField(max_length=25, choices=BASE_LAYER_TYPES, db_index=True, blank=False)
+    base_layer_type = models.CharField(max_length=25, choices=LayerType.choices, db_index=True, blank=False)
     map_box_url = models.CharField(max_length=255, blank=True, help_text=_("Mapbox or tilejson URL"))
     sprite = models.CharField(max_length=255, blank=True)
     glyphs = models.CharField(max_length=255, blank=True)
@@ -38,7 +39,7 @@ class MapBaseLayer(models.Model):
             "attribution": self.attribution,
         }
 
-        if self.base_layer_type == 'raster':
+        if self.base_layer_type == self.LayerType.RASTER:
             # only available for raster layers
             source["tileSize"] = self.tile_size
 
@@ -67,14 +68,14 @@ class MapBaseLayer(models.Model):
 
     @cached_property
     def url(self):
-        if self.base_layer_type != 'mapbox':
+        if self.base_layer_type != self.LayerType.STYLE_URL:
             return reverse('mapbox_baselayer:tilejson', args=(self.pk, ))
         else:
             return self.map_box_url
 
     @cached_property
     def real_url(self):
-        if self.base_layer_type not in ('mapbox', 'vector'):
+        if self.base_layer_type not in (self.LayerType.STYLE_URL, self.LayerType.VECTOR):
             return self.url
         else:
             return self.map_box_url.replace("mapbox://styles",
