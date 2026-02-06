@@ -9,10 +9,15 @@ class TileInLine(admin.StackedInline):
 
 
 class BaseMapLayerAdmin(admin.ModelAdmin):
-    list_display = ('name', 'slug', 'order')
+    list_display = ('name', 'slug', 'base_layer_type', 'order')
+    list_filter = ('base_layer_type',)
     search_fields = ('name', 'slug')
-    inlines = [TileInLine, ]
     exclude = ('is_overlay',)
+
+    def get_inlines(self, request, obj=None):
+        if not obj.pk or (obj and obj.base_layer_type == obj.LayerType.RASTER):
+            return [TileInLine]
+        return []
 
 
 @admin.register(models.BaseLayer)
