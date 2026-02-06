@@ -2,8 +2,17 @@
 [![Build Status](https://travis-ci.org/makinacorpus/django-mapbox-baselayer.svg?branch=master)](https://travis-ci.org/makinacorpus/django-mapbox-baselayer)
 
 
-Django model and view to store, generate and serve configuration for MapBox GL JS map base layer
+# Django Mapbox Baselayer
 
+Django application to store, manage and serve map base layers and overlay configurations for **MapLibre GL JS** and **Mapbox GL JS**.
+
+This package provides:
+- Django models to store base layers and overlay layers configuration
+- Admin interface to manage layers
+- API endpoints to serve layer configurations as TileJSON
+- Support for raster tiles, vector tiles, and Mapbox styles
+
+![Map Example](docs/map_example.png)
 
 # Getting started
 ### Installation

@@ -18,8 +18,8 @@ class Command(BaseCommand):
                         '(<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
         )
         BaseLayerTile.objects.bulk_create([
-            BaseLayerTile(base_layer=base_layer, url="//a.tile.opentopomap.org/{z}/{x}/{y}.png"),
-            BaseLayerTile(base_layer=base_layer, url="//b.tile.opentopomap.org/{z}/{x}/{y}.png"),
-            BaseLayerTile(base_layer=base_layer, url="//c.tile.opentopomap.org/{z}/{x}/{y}.png"),
+            BaseLayerTile(base_layer=base_layer, url="https://a.tile.opentopomap.org/{z}/{x}/{y}.png"),
+            BaseLayerTile(base_layer=base_layer, url="https://b.tile.opentopomap.org/{z}/{x}/{y}.png"),
+            BaseLayerTile(base_layer=base_layer, url="https://c.tile.opentopomap.org/{z}/{x}/{y}.png"),
         ])
         self.stdout.write(self.style.SUCCESS("OpenTopoMap base layer has been created."))
