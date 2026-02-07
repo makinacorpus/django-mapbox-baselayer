@@ -1,14 +1,16 @@
 CHANGELOG
 =========
 
-1.2.0         (XXXX-XX-XX)
+1.1.1         (2026-02-07)
 --------------------------
 
 **Improvements**
 
 * mapbox url is now labeled as "Style URL".
+* IGN Plan Vector tile layer is available
+
+**Bugfixes**
 * IGN layers are updated to use the new style url instead of the old tile url.
-* IGN Plan Vectort ile layer is available
 
 **Development**
 
