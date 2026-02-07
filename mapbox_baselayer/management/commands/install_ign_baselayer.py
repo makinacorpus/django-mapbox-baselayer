@@ -64,7 +64,10 @@ class Command(BaseCommand):
                 layer not in self.raster_layers
                 and layer not in self.mapbox_style_layers
             ):
-                msg = f"'{layer}' is not a valid value. Should be '{', '.join(self.raster_layers.keys()) or ', '.join(self.mapbox_style_layers.keys())}'"
+                valid_layers = list(self.raster_layers.keys()) + list(
+                    self.mapbox_style_layers.keys()
+                )
+                msg = f"'{layer}' is not a valid value. Should be '{', '.join(valid_layers)}'"
                 raise CommandError(msg)
 
         for layer in options.get("layers"):
@@ -78,15 +81,14 @@ class Command(BaseCommand):
                     "REQUEST": "GetTile",
                     "STYLE": "normal",
                     "TILEMATRIXSET": "PM",
-                    "TILEMATRIX": "{z}",
-                    "TILEROW": "{y}",
-                    "TILECOL": "{x}",
                 }
                 if self.raster_layers[layer]["need_key"]:
                     params["apikey"] = key
                 base_url = "//data.geopf.fr/private/wmts"
 
-                final_url = f"{base_url}?{urlencode(params)}"
+                # Build URL with unencoded placeholders
+                query_string = urlencode(params)
+                final_url = f"{base_url}?{query_string}&TILEMATRIX={{z}}&TILEROW={{y}}&TILECOL={{x}}"
 
                 base_layer = MapBaseLayer.objects.create(
                     name=f"IGN {layer}",
@@ -103,8 +105,9 @@ class Command(BaseCommand):
                     ]
                 )
 
-        for layer, style in self.mapbox_style_layers.items():
+        for layer in options.get("layers"):
             if layer in self.mapbox_style_layers:
+                style = self.mapbox_style_layers[layer]
                 MapBaseLayer.objects.create(
                     name=f"IGN {layer}",
                     base_layer_type="mapbox",
