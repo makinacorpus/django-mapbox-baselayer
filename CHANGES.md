@@ -7,6 +7,8 @@ CHANGELOG
 **Improvements**
 
 * mapbox url is now labeled as "Style URL".
+* IGN layers are updated to use the new style url instead of the old tile url.
+* IGN Plan Vectort ile layer is available
 
 **Development**
 
