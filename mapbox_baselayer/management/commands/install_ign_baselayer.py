@@ -9,44 +9,63 @@ class Command(BaseCommand):
     help = "Install an IGN base layer"
     raster_layers = {
         "plan": {
+            "label": "Plan IGN",
             "name": "GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2",
             "format": "png",
-            "overlay": False,
             "need_key": False,
         },
         "ortho": {
+            "label": "Orthophoto IGN",
             "name": "ORTHOIMAGERY.ORTHOPHOTOS",
             "format": "jpeg",
-            "overlay": False,
             "need_key": False,
         },
         "maps": {
+            "label": "Cartes IGN",
             "name": "GEOGRAPHICALGRIDSYSTEMS.MAPS",
             "format": "jpeg",
-            "overlay": False,
             "need_key": True,
         },
         "scan_25": {
+            "label": "Scan IGN",
             "name": "GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN25TOUR",
             "format": "jpeg",
-            "overlay": False,
             "need_key": True,
         },
         "cadastre": {
+            "label": "Cadastre IGN",
             "name": "CADASTRALPARCELS.PARCELS",
             "format": "png",
-            "overlay": True,
             "need_key": False,
         },
     }
     mapbox_style_layers = {
         "plan_vt": {
-            "url": "//data.geopf.fr/annexes/ressources/vectorTiles/styles/PLAN.IGN/standard.json"
+            "label": "Plan IGN VT",
+            "url": "//data.geopf.fr/annexes/ressources/vectorTiles/styles/PLAN.IGN/standard.json",
+        },
+        "scan_25_vt": {
+            "label": "Scan IGN VT",
+            "url": "//data.geopf.fr/annexes/ressources/vectorTiles/styles/PLAN.IGN/classique.json",
+        },
+        "gris_vt": {
+            "label": "Gris IGN VT",
+            "url": "//data.geopf.fr/annexes/ressources/vectorTiles/styles/PLAN.IGN/gris.json",
+        },
+        "cadastre_vt": {
+            "label": "Cadastre IGN VT",
+            "url": "https://data.geopf.fr/annexes/ressources/vectorTiles/styles/PCI/pci.json",
         },
     }
 
     def add_arguments(self, parser):
         parser.add_argument("--key", type=str, default="ign_scan_ws")
+        parser.add_argument(
+            "--overlay",
+            action="store_true",
+            help="Install layers as overlay",
+            default=False,
+        )
         parser.add_argument(
             "--layers",
             nargs="+",
@@ -58,6 +77,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         key = options.get("key")
+        overlay = options.get("overlay")
 
         for layer in options.get("layers"):
             if (
@@ -91,10 +111,10 @@ class Command(BaseCommand):
                 final_url = f"{base_url}?{query_string}&TILEMATRIX={{z}}&TILEROW={{y}}&TILECOL={{x}}"
 
                 base_layer = MapBaseLayer.objects.create(
-                    name=f"IGN {layer}",
+                    name=self.raster_layers[layer]["label"],
                     base_layer_type="raster",
                     tile_size=256,
-                    is_overlay=self.raster_layers[layer]["overlay"],
+                    is_overlay=overlay,
                     min_zoom=0,
                     max_zoom=19,
                     attribution="© IGN - GeoPortail",
@@ -108,10 +128,10 @@ class Command(BaseCommand):
             elif layer in self.mapbox_style_layers:
                 style = self.mapbox_style_layers[layer]
                 MapBaseLayer.objects.create(
-                    name=f"IGN {layer}",
+                    name=style["label"],
                     base_layer_type="mapbox",
                     tile_size=512,
-                    is_overlay=False,
+                    is_overlay=overlay,
                     attribution="© IGN - GeoPortail",
                     map_box_url=style["url"],
                 )
