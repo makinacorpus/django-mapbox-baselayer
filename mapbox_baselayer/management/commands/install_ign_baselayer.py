@@ -1,3 +1,5 @@
+from urllib.parse import urlencode
+
 from django.core.management import BaseCommand, CommandError
 
 from mapbox_baselayer.models import BaseLayerTile, MapBaseLayer
@@ -5,23 +7,46 @@ from mapbox_baselayer.models import BaseLayerTile, MapBaseLayer
 
 class Command(BaseCommand):
     help = "Install an IGN base layer"
-    layers = {
-        "ortho": {"name": "ORTHOIMAGERY.ORTHOPHOTOS", "format": "jpeg"},
-        "plan": {"name": "GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2", "format": "png"},
-        "maps": {"name": "GEOGRAPHICALGRIDSYSTEMS.MAPS", "format": "jpeg"},
-        "se-classique": {
-            "name": "GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.CLASSIQUE",
-            "format": "jpeg",
+    raster_layers = {
+        "plan": {
+            "name": "GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2",
+            "format": "png",
+            "overlay": False,
+            "need_key": False,
         },
-        "se-standard": {
-            "name": "GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD",
+        "ortho": {
+            "name": "ORTHOIMAGERY.ORTHOPHOTOS",
             "format": "jpeg",
+            "overlay": False,
+            "need_key": False,
         },
-        "cadastre": {"name": "CADASTRALPARCELS.PARCELS", "format": "png"},
+        "maps": {
+            "name": "GEOGRAPHICALGRIDSYSTEMS.MAPS",
+            "format": "jpeg",
+            "overlay": False,
+            "need_key": True,
+        },
+        "scan_25": {
+            "name": "GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN25TOUR",
+            "format": "jpeg",
+            "overlay": False,
+            "need_key": True,
+        },
+        "cadastre": {
+            "name": "CADASTRALPARCELS.PARCELS",
+            "format": "png",
+            "overlay": True,
+            "need_key": False,
+        },
+    }
+    mapbox_style_layers = {
+        "plan_vt": {
+            "url": "//data.geopf.fr/annexes/ressources/vectorTiles/styles/PLAN.IGN/standard.json"
+        },
     }
 
     def add_arguments(self, parser):
-        parser.add_argument("key", type=str)
+        parser.add_argument("--key", type=str, default="ign_scan_ws")
         parser.add_argument(
             "--layers",
             nargs="+",
@@ -35,28 +60,57 @@ class Command(BaseCommand):
         key = options.get("key")
 
         for layer in options.get("layers"):
-            if layer not in self.layers:
-                msg = f"'{layer}' is not a valid value. Should be '{', '.join(self.layers.keys())}'"
+            if (
+                layer not in self.raster_layers
+                and layer not in self.mapbox_style_layers
+            ):
+                msg = f"'{layer}' is not a valid value. Should be '{', '.join(self.raster_layers.keys()) or ', '.join(self.mapbox_style_layers.keys())}'"
                 raise CommandError(msg)
 
         for layer in options.get("layers"):
-            base_url = (
-                f"//wxs.ign.fr/{key}/geoportail/wmts?LAYER={self.layers[layer]['name']}&EXCEPTIONS=text/xml&"
-                f"FORMAT=image/{self.layers[layer]['format']}"
-                f"&SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&STYLE=normal&TILEMATRIXSET=PM&"
-                "TILEMATRIX={z}&TILEROW={y}&TILECOL={x}"
-            )
-            base_layer = MapBaseLayer.objects.create(
-                name=f"IGN {layer}",
-                base_layer_type="raster",
-                tile_size=256,
-                min_zoom=0,
-                max_zoom=19,
-                attribution="© IGN - GeoPortail",
-            )
-            BaseLayerTile.objects.bulk_create(
-                [
-                    BaseLayerTile(base_layer=base_layer, url=base_url),
-                ]
-            )
+            if layer in self.raster_layers:
+                params = {
+                    "LAYER": self.raster_layers[layer]["name"],
+                    "EXCEPTIONS": "text/xml",
+                    "FORMAT": f"image/{self.raster_layers[layer]['format']}",
+                    "SERVICE": "WMTS",
+                    "VERSION": "1.0.0",
+                    "REQUEST": "GetTile",
+                    "STYLE": "normal",
+                    "TILEMATRIXSET": "PM",
+                    "TILEMATRIX": "{z}",
+                    "TILEROW": "{y}",
+                    "TILECOL": "{x}",
+                }
+                if self.raster_layers[layer]["need_key"]:
+                    params["apikey"] = key
+                base_url = "//data.geopf.fr/private/wmts"
+
+                final_url = f"{base_url}?{urlencode(params)}"
+
+                base_layer = MapBaseLayer.objects.create(
+                    name=f"IGN {layer}",
+                    base_layer_type="raster",
+                    tile_size=256,
+                    is_overlay=self.raster_layers[layer]["overlay"],
+                    min_zoom=0,
+                    max_zoom=19,
+                    attribution="© IGN - GeoPortail",
+                )
+                BaseLayerTile.objects.bulk_create(
+                    [
+                        BaseLayerTile(base_layer=base_layer, url=final_url),
+                    ]
+                )
+
+        for layer, style in self.mapbox_style_layers.items():
+            if layer in self.mapbox_style_layers:
+                MapBaseLayer.objects.create(
+                    name=f"IGN {layer}",
+                    base_layer_type="mapbox",
+                    tile_size=512,
+                    is_overlay=False,
+                    attribution="© IGN - GeoPortail",
+                    map_box_url=style["url"],
+                )
         self.stdout.write(self.style.SUCCESS("IGN layer(s) created."))
