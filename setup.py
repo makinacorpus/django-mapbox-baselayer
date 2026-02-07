@@ -40,7 +40,6 @@ setup(
     ],
     install_requires=[
         'django>=2.2',
-        'urllib3',
     ],
     tests_require=tests_require,
     extras_require={

@@ -9,7 +9,9 @@ from mapbox_baselayer.models import BaseLayerTile, MapBaseLayer
 class InstallOpenTopoMapCommand(TestCase):
     @classmethod
     def setUpTestData(cls):
-        call_command("install_opentopomap_baselayer", stdout=StringIO(), stderr=StringIO())
+        call_command(
+            "install_opentopomap_baselayer", stdout=StringIO(), stderr=StringIO()
+        )
 
     def test_base_layer_is_present(self):
         self.assertTrue(MapBaseLayer.objects.filter(name="OpenTopoMap").exists())
@@ -102,8 +104,14 @@ class InstallIGNCommandWithKey(TestCase):
     @classmethod
     def setUpTestData(cls):
         call_command(
-            "install_ign_baselayer", "--key", "mykey", "--layers", "maps", "scan_25",
-            stdout=StringIO(), stderr=StringIO(),
+            "install_ign_baselayer",
+            "--key",
+            "mykey",
+            "--layers",
+            "maps",
+            "scan_25",
+            stdout=StringIO(),
+            stderr=StringIO(),
         )
 
     def test_layers_with_key_have_apikey(self):
@@ -118,5 +126,10 @@ class InstallIGNCommandInvalidLayer(TestCase):
         from django.core.management import CommandError
 
         with self.assertRaises(CommandError):
-            call_command("install_ign_baselayer", "--layers", "invalid_layer",
-                         stdout=StringIO(), stderr=StringIO())
+            call_command(
+                "install_ign_baselayer",
+                "--layers",
+                "invalid_layer",
+                stdout=StringIO(),
+                stderr=StringIO(),
+            )
