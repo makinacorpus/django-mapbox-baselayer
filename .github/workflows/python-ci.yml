@@ -72,11 +72,13 @@ jobs:
       run: |
         coverage run ./manage.py test -v3
         coverage report -m
+        coverage xml -o coverage.xml
 
-    - name: Coverage upload
-      run: |
-        pip install codecov
-        codecov
+    - uses: codecov/codecov-action@v5
+      with:
+        files: ./coverage.xml
+        token: ${{ secrets.CODECOV_TOKEN }} # not usually required for public repos
+        fail_ci_if_error: true # optional (default = false)
 
   publish:
     needs: [quality, test]
