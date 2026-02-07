@@ -15,7 +15,11 @@ class BaseMapLayerAdmin(admin.ModelAdmin):
     exclude = ("is_overlay",)
 
     def get_inlines(self, request, obj=None):
-        if not obj.pk or (obj and obj.base_layer_type == obj.LayerType.RASTER):
+        if (
+            not obj
+            or not obj.pk
+            or (obj and obj.base_layer_type == obj.LayerType.RASTER)
+        ):
             return [TileInLine]
         return []
 

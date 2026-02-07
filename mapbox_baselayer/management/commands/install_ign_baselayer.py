@@ -84,7 +84,7 @@ class Command(BaseCommand):
                 }
                 if self.raster_layers[layer]["need_key"]:
                     params["apikey"] = key
-                base_url = "//data.geopf.fr/private/wmts"
+                base_url = f"//data.geopf.fr/{'private/' if self.raster_layers[layer]['need_key'] else ''}wmts"
 
                 # Build URL with unencoded placeholders
                 query_string = urlencode(params)
@@ -105,8 +105,7 @@ class Command(BaseCommand):
                     ]
                 )
 
-        for layer in options.get("layers"):
-            if layer in self.mapbox_style_layers:
+            elif layer in self.mapbox_style_layers:
                 style = self.mapbox_style_layers[layer]
                 MapBaseLayer.objects.create(
                     name=f"IGN {layer}",
