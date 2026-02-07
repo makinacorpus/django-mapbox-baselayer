@@ -28,16 +28,17 @@ class MapBaseLayerViewTestCase(TestCase):
             reverse("mapbox_baselayer:tilejson", args=(self.raster_base_layer.pk,))
         )
         self.assertEqual(response.status_code, 200)
+        slug = self.raster_base_layer.slug
         expected = {
             "layers": [
                 {
-                    "id": "raster-layer-background",
-                    "source": "raster-layer",
+                    "id": f"{slug}-background",
+                    "source": slug,
                     "type": "raster",
                 }
             ],
             "sources": {
-                "raster-layer": {
+                slug: {
                     "maxzoom": 22,
                     "minzoom": 0,
                     "tiles": ["http://tiles/{x}/{y]/{z}"],

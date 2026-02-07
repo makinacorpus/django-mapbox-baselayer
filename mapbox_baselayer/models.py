@@ -41,8 +41,16 @@ class MapBaseLayer(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
-        self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
+        import uuid
+
+        base_slug = slugify(self.name)
+        if not self.pk:
+            # temporary unique slug to satisfy unique constraint on first insert
+            self.slug = f"{base_slug[:41]}-{uuid.uuid4().hex[:8]}"
+            super().save(*args, **kwargs)
+        # always include pk for uniqueness
+        self.slug = f"{base_slug}-{self.pk}"
+        super().save(update_fields=["slug"])
 
     def get_source(self):
         source = {
