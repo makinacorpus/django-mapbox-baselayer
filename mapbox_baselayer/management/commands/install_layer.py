@@ -154,7 +154,7 @@ class Command(BaseCommand):
                 }
                 if self.raster_layers[layer]["need_key"]:
                     params["apikey"] = key
-                base_url = f"//data.geopf.fr/{'private/' if self.raster_layers[layer]['need_key'] else ''}wmts"
+                base_url = f"https://data.geopf.fr/{'private/' if self.raster_layers[layer]['need_key'] else ''}wmts"
 
                 query_string = urlencode(params)
                 final_url = f"{base_url}?{query_string}&TILEMATRIX={{z}}&TILEROW={{y}}&TILECOL={{x}}"
