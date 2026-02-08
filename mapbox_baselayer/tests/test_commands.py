@@ -190,3 +190,13 @@ class InstallLayerNoProvider(TestCase):
                 stdout=StringIO(),
                 stderr=StringIO(),
             )
+
+
+class InstallLayerUnknownProvider(TestCase):
+    def test_unknown_provider_raises_error(self):
+        from mapbox_baselayer.management.commands.install_layer import Command
+
+        cmd = Command(stdout=StringIO(), stderr=StringIO())
+        with self.assertRaises(CommandError) as ctx:
+            cmd.handle(provider="unknown_provider")
+        self.assertIn("Unknown provider", str(ctx.exception))
