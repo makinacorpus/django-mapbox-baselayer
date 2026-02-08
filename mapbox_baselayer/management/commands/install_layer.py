@@ -72,7 +72,7 @@ class Command(BaseCommand):
         },
         "cadastre": {
             "label": "Cadastre IGN",
-            "name": "CADASTRALPARCELS.PARCELS",
+            "name": "CADASTRALPARCELS.PARCELLAIRE_EXPRESS",
             "format": "png",
             "need_key": False,
         },
