@@ -1,6 +1,15 @@
 CHANGELOG
 =========
 
+1.1.1+dev     (XXXX-XX-XX)
+--------------------------
+
+**Improvements**
+
+* Provide default OSM base layer if no layer in database.
+* Change default glyph by demo glyph to avoid map style problems on raster based layer.
+
+
 1.1.1         (2026-02-07)
 --------------------------
 
