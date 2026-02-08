@@ -1,4 +1,5 @@
 from django.http import JsonResponse
+from django.urls import reverse
 from django.views import View
 from django.views.generic.detail import BaseDetailView
 
@@ -14,6 +15,31 @@ class MapboxBaseLayerJsonDetailView(BaseDetailView):
         return JsonResponse(self.get_object().tilejson)
 
 
+DEFAULT_OSM_TILEJSON = {
+    "version": 8,
+    "sources": {
+        "osm": {
+            "type": "raster",
+            "tiles": [
+                "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                "https://b.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                "https://c.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            ],
+            "minzoom": 0,
+            "maxzoom": 19,
+            "tileSize": 256,
+            "attribution": '<a href="https://www.openstreetmap.org/copyright">OSM Contributors</a>',
+        }
+    },
+    "layers": [
+        {
+            "id": "osm-background",
+            "type": "raster",
+            "source": "osm",
+        }
+    ],
+    "glyphs": "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
+}
 class MapLayerListView(View):
     def get(self, request, *args, **kwargs):
         layers = models.MapBaseLayer.objects.all()
