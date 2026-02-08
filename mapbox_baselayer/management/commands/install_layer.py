@@ -80,15 +80,15 @@ class Command(BaseCommand):
     mapbox_style_layers = {
         "plan_vt": {
             "label": "Plan IGN VT",
-            "url": "//data.geopf.fr/annexes/ressources/vectorTiles/styles/PLAN.IGN/standard.json",
+            "url": "https://data.geopf.fr/annexes/ressources/vectorTiles/styles/PLAN.IGN/standard.json",
         },
         "scan_25_vt": {
             "label": "Scan IGN VT",
-            "url": "//data.geopf.fr/annexes/ressources/vectorTiles/styles/PLAN.IGN/classique.json",
+            "url": "https://data.geopf.fr/annexes/ressources/vectorTiles/styles/PLAN.IGN/classique.json",
         },
         "gris_vt": {
             "label": "Gris IGN VT",
-            "url": "//data.geopf.fr/annexes/ressources/vectorTiles/styles/PLAN.IGN/gris.json",
+            "url": "https://data.geopf.fr/annexes/ressources/vectorTiles/styles/PLAN.IGN/gris.json",
         },
         "cadastre_vt": {
             "label": "Cadastre IGN VT",
