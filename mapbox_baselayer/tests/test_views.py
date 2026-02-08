@@ -109,3 +109,24 @@ class MapBaseLayerViewTestCase(TestCase):
         self.assertEqual(
             data["base_layers"][1]["name"], "Raster layer"
         )  # order=0, but 'M' < 'R'
+
+
+class AdminGetInlinesTestCase(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.admin = BaseLayerAdmin(BaseLayer, AdminSite())
+        self.request = self.factory.get("/")
+
+    def test_inlines_for_new_object(self):
+        inlines = self.admin.get_inlines(self.request, obj=None)
+        self.assertEqual(len(inlines), 1)
+
+    def test_inlines_for_raster(self):
+        layer = MapBaseLayer.objects.create(name="R", base_layer_type="raster")
+        inlines = self.admin.get_inlines(self.request, obj=layer)
+        self.assertEqual(len(inlines), 1)
+
+    def test_no_inlines_for_mapbox(self):
+        layer = MapBaseLayer.objects.create(name="M", base_layer_type="mapbox")
+        inlines = self.admin.get_inlines(self.request, obj=layer)
+        self.assertEqual(len(inlines), 0)
