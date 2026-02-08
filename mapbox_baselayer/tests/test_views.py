@@ -1,7 +1,10 @@
-from django.test import TestCase
+from django.contrib.admin.sites import AdminSite
+from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
-from mapbox_baselayer.models import BaseLayerTile, MapBaseLayer
+from mapbox_baselayer.admin import BaseLayerAdmin
+from mapbox_baselayer.models import BaseLayer, BaseLayerTile, MapBaseLayer
+from mapbox_baselayer.views import DEFAULT_OSM_TILEJSON
 
 
 class EmptyDatabaseTestCase(TestCase):

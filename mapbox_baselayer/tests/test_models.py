@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 
-from mapbox_baselayer.models import BaseLayer, MapBaseLayer, OverlayLayer
+from mapbox_baselayer.models import BaseLayer, BaseLayerTile, MapBaseLayer, OverlayLayer
 
 
 class MapBaseLayerTEstCase(TestCase):
