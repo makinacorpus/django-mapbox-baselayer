@@ -94,3 +94,40 @@ class ProxyModelsTestCase(TestCase):
         self.assertEqual(all_layers.count(), 2)
         self.assertIn(base.pk, all_layers.values_list("pk", flat=True))
         self.assertIn(overlay.pk, all_layers.values_list("pk", flat=True))
+
+
+class RealUrlTestCase(TestCase):
+    def test_real_url_raster(self):
+        layer = MapBaseLayer.objects.create(name="Raster", base_layer_type="raster")
+        self.assertEqual(layer.real_url, layer.url)
+
+    def test_real_url_mapbox(self):
+        layer = MapBaseLayer.objects.create(
+            name="Mapbox",
+            base_layer_type="mapbox",
+            map_box_url="mapbox://styles/user/style",
+        )
+        self.assertEqual(
+            layer.real_url,
+            "https://api.mapbox.com/styles/v1/user/style",
+        )
+
+    def test_real_url_vector(self):
+        layer = MapBaseLayer.objects.create(
+            name="Vector",
+            base_layer_type="vector",
+            map_box_url="mapbox://styles/user/vstyle",
+        )
+        self.assertEqual(
+            layer.real_url,
+            "https://api.mapbox.com/styles/v1/user/vstyle",
+        )
+
+
+class BaseLayerTileStrTestCase(TestCase):
+    def test_str(self):
+        layer = MapBaseLayer.objects.create(name="Test", base_layer_type="raster")
+        tile = BaseLayerTile.objects.create(
+            base_layer=layer, url="http://example.com/{z}/{x}/{y}.png"
+        )
+        self.assertEqual(str(tile), "Test - http://example.com/{z}/{x}/{y}.png")
