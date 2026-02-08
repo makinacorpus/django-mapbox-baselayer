@@ -4,6 +4,29 @@ from django.urls import reverse
 from mapbox_baselayer.models import BaseLayerTile, MapBaseLayer
 
 
+class EmptyDatabaseTestCase(TestCase):
+    def test_baselayer_list_returns_default_osm_entry(self):
+        response = self.client.get(reverse("mapbox_baselayer:baselayer-list"))
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("base_layers", data)
+        self.assertIn("overlay_layers", data)
+        self.assertEqual(len(data["base_layers"]), 1)
+        self.assertEqual(len(data["overlay_layers"]), 0)
+        osm_entry = data["base_layers"][0]
+        self.assertEqual(osm_entry["name"], "OSM")
+        self.assertEqual(osm_entry["slug"], "osm")
+        self.assertIn("default-osm/tilejson", osm_entry["url"])
+
+    def test_default_osm_tilejson_endpoint(self):
+        response = self.client.get(reverse("mapbox_baselayer:default-osm-tilejson"))
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data, DEFAULT_OSM_TILEJSON)
+        self.assertIn("osm", data["sources"])
+        self.assertEqual(len(data["sources"]["osm"]["tiles"]), 3)
+
+
 class MapBaseLayerViewTestCase(TestCase):
     def setUp(self) -> None:
         self.raster_base_layer = MapBaseLayer.objects.create(
