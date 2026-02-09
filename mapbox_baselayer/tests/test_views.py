@@ -1,9 +1,15 @@
 from django.contrib.admin.sites import AdminSite
+from django.contrib.auth.models import User
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
-from mapbox_baselayer.admin import BaseLayerAdmin
-from mapbox_baselayer.models import BaseLayer, BaseLayerTile, MapBaseLayer
+from mapbox_baselayer.admin import BaseLayerRasterAdmin, BaseLayerStyleAdmin
+from mapbox_baselayer.models import (
+    BaseLayerRaster,
+    BaseLayerStyle,
+    BaseLayerTile,
+    MapBaseLayer,
+)
 from mapbox_baselayer.views import DEFAULT_OSM_TILEJSON
 
 
@@ -117,19 +123,17 @@ class MapBaseLayerViewTestCase(TestCase):
 class AdminGetInlinesTestCase(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
-        self.admin = BaseLayerAdmin(BaseLayer, AdminSite())
+        self.raster_admin = BaseLayerRasterAdmin(BaseLayerRaster, AdminSite())
+        self.style_admin = BaseLayerStyleAdmin(BaseLayerStyle, AdminSite())
         self.request = self.factory.get("/")
-
-    def test_inlines_for_new_object(self):
-        inlines = self.admin.get_inlines(self.request, obj=None)
-        self.assertEqual(len(inlines), 1)
+        self.request.user = User.objects.create_superuser("admin", "a@b.com", "pass")
 
     def test_inlines_for_raster(self):
         layer = MapBaseLayer.objects.create(name="R", base_layer_type="raster")
-        inlines = self.admin.get_inlines(self.request, obj=layer)
+        inlines = self.raster_admin.get_inline_instances(self.request, obj=layer)
         self.assertEqual(len(inlines), 1)
 
     def test_no_inlines_for_mapbox(self):
         layer = MapBaseLayer.objects.create(name="M", base_layer_type="mapbox")
-        inlines = self.admin.get_inlines(self.request, obj=layer)
+        inlines = self.style_admin.get_inline_instances(self.request, obj=layer)
         self.assertEqual(len(inlines), 0)

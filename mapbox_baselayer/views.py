@@ -49,7 +49,7 @@ class DefaultOSMTileJsonView(View):
 
 class MapLayerListView(View):
     def get(self, request, *args, **kwargs):
-        layers = models.MapBaseLayer.objects.all()
+        layers = models.MapBaseLayer.objects.filter(enabled=True)
         base_layers = layers.filter(is_overlay=False)
         overlay_layers = layers.filter(is_overlay=True)
 
