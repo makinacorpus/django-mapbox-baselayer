@@ -1,10 +1,11 @@
-[report]
+[run]
 omit =
-    */tests*
-    */migrations*
+    */tests/*
+    */migrations/*
     */lib*
     test_mapbox_baselayer/*
     doc/*
     manage.py
 
+[report]
 ignore_errors = true

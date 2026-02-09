@@ -53,17 +53,17 @@ class MapLayerListView(View):
         base_layers = layers.filter(is_overlay=False)
         overlay_layers = layers.filter(is_overlay=True)
 
-        if not base_layers.exists() and not overlay_layers.exists():
-            default_url = reverse("mapbox_baselayer:default-osm-tilejson")
-            data = {
-                "base_layers": [{"name": "OSM", "slug": "osm", "url": default_url}],
-                "overlay_layers": [],
-            }
-            return JsonResponse(data)
-
         data = {
             "base_layers": [
                 {"name": bl.name, "slug": bl.slug, "url": bl.url} for bl in base_layers
+            ]
+            if base_layers.filter(enabled=True).exists()
+            else [
+                {
+                    "name": "OSM",
+                    "slug": "osm",
+                    "url": reverse("mapbox_baselayer:default-osm-tilejson"),
+                }
             ],
             "overlay_layers": [
                 {"name": ol.name, "slug": ol.slug, "url": ol.url}
