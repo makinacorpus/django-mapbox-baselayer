@@ -5,7 +5,10 @@ from django.utils.functional import cached_property
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
-from mapbox_baselayer.validators import validate_required_token_in_tile_url
+from mapbox_baselayer.validators import (
+    validate_only_required_tokens_in_tile_url,
+    validate_required_token_in_tile_url,
+)
 
 
 class MapBaseLayer(models.Model):
@@ -306,7 +309,7 @@ class BaseLayerTile(models.Model):
         max_length=2048,
         validators=[
             validate_required_token_in_tile_url,
-            validate_required_token_in_tile_url,
+            validate_only_required_tokens_in_tile_url,
         ],
     )
 
