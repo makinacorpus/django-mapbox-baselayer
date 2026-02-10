@@ -39,27 +39,22 @@ Tile size should be 256 for raster and 512 for vector.
 
 ### Commands
 
-#### OSM base layer
+#### Unified `install_layer` command
 
 ```bash
-./manage.py install_osm_baselayer
-```
+# OSM base layer
+./manage.py install_layer osm
+./manage.py install_layer osm --order 2
 
-#### OpenTopoMap base layer
+# OpenTopoMap base layer
+./manage.py install_layer opentopomap
+./manage.py install_layer opentopomap --order 3
 
-```bash
-./manage.py install_opentopomap_baselayer
-```
+# IGN base layers (list available layers)
+./manage.py install_layer ign
 
-#### Mapbox base layer
-
-```bash
-./manage.py install_mapbox_baselayer (use mapbox://styles/mapbox/streets-v11 as default)
-./manage.py install_mapbox_baselayer --mapbox-url=mapbox://styles/mapbox/satellite-streets-v11
-```
-
-#### IGN base layer
-
-```bash
-./manage.py install_ign_baselayer --layers ortho plan maps scan_25 cadastre plan_vt
+# IGN base layers (install specific layers)
+./manage.py install_layer ign ortho plan maps scan_25 cadastre plan_vt
+./manage.py install_layer ign maps scan_25 --key my_api_key --order=1
+./manage.py install_layer ign cadastre --overlay
 ```

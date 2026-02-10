@@ -25,7 +25,7 @@ SECRET_KEY = "l)m8xtc44xlc0h8d&$0hwstpayt)9v+&&zo!24-u=4z#i1#6tl"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -45,13 +45,13 @@ LOCALE_DIRS = [
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "django.middleware.locale.LocaleMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
 ]
 
 ROOT_URLCONF = "test_mapbox_baselayer.urls"

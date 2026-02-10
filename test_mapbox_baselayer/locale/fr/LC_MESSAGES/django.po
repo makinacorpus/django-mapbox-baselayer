@@ -24,7 +24,7 @@ msgstr ""
 
 #: test_mapbox_baselayer/test_app/templates/test_app/map_example.html:55
 msgid "Base layers:"
-msgstr ""
+msgstr "Fonds de plan :"
 
 #: test_mapbox_baselayer/test_app/templates/test_app/map_example.html:57
 #: test_mapbox_baselayer/test_app/templates/test_app/map_example.html:62

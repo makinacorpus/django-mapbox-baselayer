@@ -40,7 +40,7 @@ target-version = "py39"
 [lint]
 
 select = ["G", "INT", "E4", "E7", "E9", "F", "DJ", "LOG", "UP", "I", "T10", "EM", "T201"]
-ignore = []
+ignore = ["DJ006"]
 
 
 # Allow fix for all enabled rules (when `--fix`) is provided.

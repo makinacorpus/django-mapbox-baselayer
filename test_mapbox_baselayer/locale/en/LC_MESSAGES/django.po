@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-06 16:07+0000\n"
+"POT-Creation-Date: 2026-02-09 18:16+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,23 +18,32 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+#: test_mapbox_baselayer/test_app/templates/test_app/map_example.html:7
 msgid "MapLibre GL JS Example"
 msgstr ""
 
+#: test_mapbox_baselayer/test_app/templates/test_app/map_example.html:55
 msgid "Base layers:"
 msgstr ""
 
+#: test_mapbox_baselayer/test_app/templates/test_app/map_example.html:57
+#: test_mapbox_baselayer/test_app/templates/test_app/map_example.html:62
 msgid "Loading..."
 msgstr ""
 
+#: test_mapbox_baselayer/test_app/templates/test_app/map_example.html:60
 msgid "Overlays:"
 msgstr ""
 
+#: test_mapbox_baselayer/test_app/templates/test_app/map_example.html:98
+#: test_mapbox_baselayer/test_app/templates/test_app/map_example.html:99
 msgid "Loading error"
 msgstr ""
 
+#: test_mapbox_baselayer/test_app/templates/test_app/map_example.html:106
 msgid "No base layer available."
 msgstr ""
 
+#: test_mapbox_baselayer/test_app/templates/test_app/map_example.html:141
 msgid "No overlay available."
 msgstr ""

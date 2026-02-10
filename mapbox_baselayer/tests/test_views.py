@@ -1,7 +1,39 @@
-from django.test import TestCase
+from django.contrib.admin.sites import AdminSite
+from django.contrib.auth.models import User
+from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
-from mapbox_baselayer.models import BaseLayerTile, MapBaseLayer
+from mapbox_baselayer.admin import BaseLayerRasterAdmin, BaseLayerStyleAdmin
+from mapbox_baselayer.models import (
+    BaseLayerRaster,
+    BaseLayerStyle,
+    BaseLayerTile,
+    MapBaseLayer,
+)
+from mapbox_baselayer.views import DEFAULT_OSM_TILEJSON
+
+
+class EmptyDatabaseTestCase(TestCase):
+    def test_baselayer_list_returns_default_osm_entry(self):
+        response = self.client.get(reverse("mapbox_baselayer:baselayer-list"))
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("base_layers", data)
+        self.assertIn("overlay_layers", data)
+        self.assertEqual(len(data["base_layers"]), 1)
+        self.assertEqual(len(data["overlay_layers"]), 0)
+        osm_entry = data["base_layers"][0]
+        self.assertEqual(osm_entry["name"], "OSM")
+        self.assertEqual(osm_entry["slug"], "osm")
+        self.assertIn("default-osm/tilejson", osm_entry["url"])
+
+    def test_default_osm_tilejson_endpoint(self):
+        response = self.client.get(reverse("mapbox_baselayer:default-osm-tilejson"))
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data, DEFAULT_OSM_TILEJSON)
+        self.assertIn("osm", data["sources"])
+        self.assertEqual(len(data["sources"]["osm"]["tiles"]), 3)
 
 
 class MapBaseLayerViewTestCase(TestCase):
@@ -28,16 +60,17 @@ class MapBaseLayerViewTestCase(TestCase):
             reverse("mapbox_baselayer:tilejson", args=(self.raster_base_layer.pk,))
         )
         self.assertEqual(response.status_code, 200)
+        slug = self.raster_base_layer.slug
         expected = {
             "layers": [
                 {
-                    "id": "raster-layer-background",
-                    "source": "raster-layer",
+                    "id": f"{slug}-background",
+                    "source": slug,
                     "type": "raster",
                 }
             ],
             "sources": {
-                "raster-layer": {
+                slug: {
                     "maxzoom": 22,
                     "minzoom": 0,
                     "tiles": ["http://tiles/{x}/{y]/{z}"],
@@ -85,3 +118,22 @@ class MapBaseLayerViewTestCase(TestCase):
         self.assertEqual(
             data["base_layers"][1]["name"], "Raster layer"
         )  # order=0, but 'M' < 'R'
+
+
+class AdminGetInlinesTestCase(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.raster_admin = BaseLayerRasterAdmin(BaseLayerRaster, AdminSite())
+        self.style_admin = BaseLayerStyleAdmin(BaseLayerStyle, AdminSite())
+        self.request = self.factory.get("/")
+        self.request.user = User.objects.create_superuser("admin", "a@b.com", "pass")
+
+    def test_inlines_for_raster(self):
+        layer = MapBaseLayer.objects.create(name="R", base_layer_type="raster")
+        inlines = self.raster_admin.get_inline_instances(self.request, obj=layer)
+        self.assertEqual(len(inlines), 1)
+
+    def test_no_inlines_for_mapbox(self):
+        layer = MapBaseLayer.objects.create(name="M", base_layer_type="mapbox")
+        inlines = self.style_admin.get_inline_instances(self.request, obj=layer)
+        self.assertEqual(len(inlines), 0)

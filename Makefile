@@ -43,7 +43,7 @@ coverage:
 	coverage run --parallel-mode --concurrency=multiprocessing ./manage.py test $(test_name) --parallel -v $(verbose_level) || true
 	coverage combine && coverage $(report)
 	coverage xml -o coverage.xml
-	rm .coverage* || true
+	rm .coverage.* || true
 
 verbose_level ?= 1
 .PHONY: test

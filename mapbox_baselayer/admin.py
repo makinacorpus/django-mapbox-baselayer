@@ -1,34 +1,127 @@
+from django import forms
 from django.contrib import admin
+from django.utils.translation import gettext_lazy as _
 
-from . import models
+from mapbox_baselayer.models import (
+    BaseLayerRaster,
+    BaseLayerStyle,
+    BaseLayerTile,
+    MapBaseLayer,
+    OverlayRaster,
+    OverlayStyle,
+)
 
 
-class TileInLine(admin.StackedInline):
-    model = models.BaseLayerTile
+class BaseLayerTileInline(admin.TabularInline):
+    model = BaseLayerTile
     extra = 0
+    min_num = 1
 
 
-class BaseMapLayerAdmin(admin.ModelAdmin):
-    list_display = ("name", "slug", "base_layer_type", "order")
-    list_filter = ("base_layer_type",)
-    search_fields = ("name", "slug")
-    exclude = ("is_overlay",)
+class RasterForm(forms.ModelForm):
+    class Meta:
+        model = MapBaseLayer
+        exclude = ("map_box_url", "is_overlay", "base_layer_type")
 
-    def get_inlines(self, request, obj=None):
-        if (
-            not obj
-            or not obj.pk
-            or (obj and obj.base_layer_type == obj.LayerType.RASTER)
-        ):
-            return [TileInLine]
-        return []
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["tile_size"].initial = 256
 
 
-@admin.register(models.BaseLayer)
-class BaseLayerAdmin(BaseMapLayerAdmin):
-    pass
+class StyleForm(forms.ModelForm):
+    class Meta:
+        model = MapBaseLayer
+        exclude = ("is_overlay", "base_layer_type")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["map_box_url"].required = True
 
 
-@admin.register(models.OverlayLayer)
-class OverlayLayerAdmin(BaseMapLayerAdmin):
-    pass
+class RasterAdminMixin:
+    form = RasterForm
+    inlines = [BaseLayerTileInline]
+    readonly_fields = ("slug",)
+
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    ("name", "slug"),
+                    ("enabled", "order"),
+                    "attribution",
+                )
+            },
+        ),
+        (
+            _("Advanced options"),
+            {
+                "fields": (("min_zoom", "max_zoom"), "sprite", "glyphs", "tile_size"),
+                "classes": ("collapse",),
+            },
+        ),
+    )
+
+
+class StyleAdminMixin:
+    form = StyleForm
+    inlines = []
+    readonly_fields = ("slug",)
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    ("name", "slug"),
+                    "map_box_url",
+                    ("enabled", "order"),
+                    "attribution",
+                )
+            },
+        ),
+        (
+            _("Advanced options"),
+            {
+                "fields": (("min_zoom", "max_zoom"), "sprite", "glyphs", "tile_size"),
+                "classes": ("collapse",),
+            },
+        ),
+    )
+
+
+@admin.register(MapBaseLayer)
+class LayerAdmin(admin.ModelAdmin):
+    list_display = ("name", "is_overlay", "min_zoom", "max_zoom")
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(enabled=True)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(BaseLayerRaster)
+class BaseLayerRasterAdmin(RasterAdminMixin, admin.ModelAdmin):
+    list_display = ("name", "order", "min_zoom", "max_zoom", "enabled")
+
+
+@admin.register(BaseLayerStyle)
+class BaseLayerStyleAdmin(StyleAdminMixin, admin.ModelAdmin):
+    list_display = ("name", "order", "min_zoom", "max_zoom", "enabled")
+
+
+@admin.register(OverlayRaster)
+class OverlayRasterAdmin(RasterAdminMixin, admin.ModelAdmin):
+    list_display = ("name", "order", "min_zoom", "max_zoom", "enabled")
+
+
+@admin.register(OverlayStyle)
+class OverlayStyleAdmin(StyleAdminMixin, admin.ModelAdmin):
+    list_display = ("name", "order", "min_zoom", "max_zoom", "enabled")
