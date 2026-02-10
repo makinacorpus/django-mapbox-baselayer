@@ -13,11 +13,13 @@ def validate_required_token_in_tile_url(value):
 def validate_only_required_tokens_in_tile_url(value):
     """Validate that the tile URL contains only the required tokens for Mapbox style URLs."""
     allowed_tokens = ["{z}", "{x}", "{y}"]
-    bad_tokens_in_value = [
-        token
-        for token in value.split("{")
-        if "}" in token and f"{{{token.split('}')[0]}}}" not in allowed_tokens
-    ]
+    bad_tokens_in_value = []
+    for chunk in value.split("{"):
+        if "}" in chunk:
+            token_name = chunk.split("}", 1)[0]
+            full_token = "{" + token_name + "}"
+            if full_token not in allowed_tokens and full_token != "{a}":
+                bad_tokens_in_value.append(full_token)
     if "{a}" in value:
         msg = "Tile URL cannot contain the '{a}' token, which is not supported for Style URLs. Please add 3 URLs (a, b and c) instead of only once with '{a}'."
         raise ValidationError(msg)
