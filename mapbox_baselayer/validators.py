@@ -19,7 +19,7 @@ def validate_only_required_tokens_in_tile_url(value):
         if "}" in token and f"{{{token.split('}')[0]}}}" not in allowed_tokens
     ]
     if "{a}" in value:
-        msg = "Tile URL cannot contain the '{a}' token, which is not supported for Style URLs. Please add 3 URLS (a, b and c) instead of only once with '{a}'."
+        msg = "Tile URL cannot contain the '{a}' token, which is not supported for Style URLs. Please add 3 URLs (a, b and c) instead of only once with '{a}'."
         raise ValidationError(msg)
     elif bad_tokens_in_value:
         msg = f"Tile URL contains unsupported tokens: {', '.join(bad_tokens_in_value)}. Only {', '.join(allowed_tokens)} are allowed for Style URLs."
