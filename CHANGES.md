@@ -8,6 +8,10 @@ CHANGELOG
 
 * Provide default OSM base layer if no layer in database.
 * Change default glyph by demo glyph to avoid map style problems on raster based layer.
+* Commands are replaced by `ìnstall_layer` command with different options to install different layers.
+* Use proxy models in admin for Base layers / Overlays / Style URL / Raster.
+* Customize forms for Raster or Style URL layers
+* Ability to enable / disable layers in admin without deleting them.
 
 
 1.1.1         (2026-02-07)
