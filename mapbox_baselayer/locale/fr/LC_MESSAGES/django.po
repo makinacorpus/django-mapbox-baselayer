@@ -22,8 +22,8 @@ msgid "Advanced options"
 msgstr "Options avancées"
 
 #: mapbox_baselayer/apps.py:8
-msgid "MapBox Utils"
-msgstr "Utilitaires MapBox"
+msgid "Map Utils"
+msgstr "Utilitaires de carte"
 
 #: mapbox_baselayer/models.py:13 mapbox_baselayer/models.py:25
 msgid "Style URL"

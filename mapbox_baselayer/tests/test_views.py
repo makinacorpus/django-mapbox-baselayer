@@ -10,7 +10,7 @@ from mapbox_baselayer.models import (
     BaseLayerTile,
     MapBaseLayer,
 )
-from mapbox_baselayer.views import DEFAULT_OSM_TILEJSON
+from mapbox_baselayer.utils import DEFAULT_OSM_TILEJSON
 
 
 class EmptyDatabaseTestCase(TestCase):
