@@ -38,7 +38,7 @@ def get_map_base_layers():
         "base_layers": [
             {"name": bl.name, "slug": bl.slug, "url": bl.url} for bl in base_layers
         ]
-        if base_layers.filter(enabled=True).exists()
+        if base_layers.exists()
         else [
             {
                 "name": "OSM",
