@@ -31,14 +31,8 @@ DEFAULT_OSM_TILEJSON = {
 
 def get_map_base_layers():
     layers = list(MapBaseLayer.objects.filter(enabled=True))
-    base_layers = []
-    overlay_layers = []
-    
-    for layer in layers:
-        if layer.is_overlay:
-            overlay_layers.append(layer)
-        else:
-            base_layers.append(layer)
+    base_layers = [layer for layer in layers if not layer.is_overlay]
+    overlay_layers = [layer for layer in layers if layer.is_overlay]
 
     data = {
         "base_layers": [
