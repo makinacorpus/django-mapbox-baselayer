@@ -30,15 +30,15 @@ DEFAULT_OSM_TILEJSON = {
 
 
 def get_map_base_layers():
-    layers = MapBaseLayer.objects.filter(enabled=True)
-    base_layers = layers.filter(is_overlay=False)
-    overlay_layers = layers.filter(is_overlay=True)
+    layers = list(MapBaseLayer.objects.filter(enabled=True))
+    base_layers = [layer for layer in layers if not layer.is_overlay]
+    overlay_layers = [layer for layer in layers if layer.is_overlay]
 
     data = {
         "base_layers": [
             {"name": bl.name, "slug": bl.slug, "url": bl.url} for bl in base_layers
         ]
-        if base_layers.exists()
+        if base_layers
         else [
             {
                 "name": "OSM",
