@@ -23,7 +23,7 @@ msgid "Advanced options"
 msgstr ""
 
 #: mapbox_baselayer/apps.py:8
-msgid "MapBox Utils"
+msgid "Map Utils"
 msgstr ""
 
 #: mapbox_baselayer/models.py:13 mapbox_baselayer/models.py:25

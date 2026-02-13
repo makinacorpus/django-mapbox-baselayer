@@ -4,6 +4,10 @@ CHANGELOG
 1.2.0+dev     (XXXX-XX-XX)
 --------------------------
 
+**Improvements**
+
+* Provide function to get layer list without url fetch.
+
 
 1.2.0         (2026-02-10)
 --------------------------
