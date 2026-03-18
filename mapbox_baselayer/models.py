@@ -107,9 +107,13 @@ class MapBaseLayer(models.Model):
             # temporary unique slug to satisfy unique constraint on first insert
             self.slug = f"{base_slug[:41]}-{uuid.uuid4().hex[:8]}"
             super().save(*args, **kwargs)
-        # always include pk for uniqueness
-        self.slug = f"{base_slug}-{self.pk}"
-        super().save(update_fields=["slug"])
+            # now set the final slug with pk and update only the slug
+            self.slug = f"{base_slug}-{self.pk}"
+            super().save(update_fields=["slug"])
+        else:
+            # existing object: update slug and save all fields
+            self.slug = f"{base_slug}-{self.pk}"
+        super().save(*args, **kwargs)
 
     def get_source(self):
         source = {
