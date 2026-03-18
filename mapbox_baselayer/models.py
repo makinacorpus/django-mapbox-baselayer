@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 from django.db.models import TextChoices
 from django.urls import reverse
@@ -100,16 +102,11 @@ class MapBaseLayer(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
-        import uuid
-
         base_slug = slugify(self.name)
         if not self.pk:
             # temporary unique slug to satisfy unique constraint on first insert
             self.slug = f"{base_slug[:41]}-{uuid.uuid4().hex[:8]}"
             super().save(*args, **kwargs)
-            # now set the final slug with pk and update only the slug
-            self.slug = f"{base_slug}-{self.pk}"
-            super().save(update_fields=["slug"])
         else:
             # existing object: update slug and save all fields
             self.slug = f"{base_slug}-{self.pk}"
