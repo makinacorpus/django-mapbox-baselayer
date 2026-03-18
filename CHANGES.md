@@ -5,7 +5,7 @@ CHANGELOG
 1.2.2         (2026-03-18)
 --------------------------
 
-**Bigfixes**
+**Bugfixes**
 
 * Fix update via admin
 
