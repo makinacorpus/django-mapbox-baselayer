@@ -106,7 +106,6 @@ class MapBaseLayer(models.Model):
         if not self.pk:
             # temporary unique slug to satisfy unique constraint on first insert
             self.slug = f"{base_slug[:41]}-{uuid.uuid4().hex[:8]}"
-            super().save(*args, **kwargs)
         else:
             # existing object: update slug and save all fields
             self.slug = f"{base_slug}-{self.pk}"
