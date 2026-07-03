@@ -42,7 +42,7 @@ version = {file = "mapbox_baselayer/VERSION.md"}
 readme = {file = ["README.md", "CHANGES.md"], content-type = "text/markdown"}
 
 [tool.setuptools]
-packages = ["mapbox_baselayer"]
+packages = { find = { include = ["mapbox_baselayer*"] } }
 exclude-package-data = { "*" = ["CHANGES.md", "README.md"] }
 include-package-data = true
 
