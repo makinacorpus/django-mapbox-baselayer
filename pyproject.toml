@@ -33,7 +33,7 @@ Homepage = "https://github.com/makinacorpus/django-mapbox-baselayer.git"
 dev = [
     "factory-boy",
     "ruff",
-    "coverage",
+    "coverage[toml]",
     "django-debug-toolbar",
 ]
 
