@@ -105,9 +105,12 @@ jobs:
           sudo apt-get -y install gettext
           django-admin compilemessages
 
+      - name: Setup uv
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
+
       - name: Build package
         run: |
-          python setup.py sdist bdist_wheel
+          uv build
 
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
