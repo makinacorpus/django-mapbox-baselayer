@@ -2,6 +2,14 @@ CHANGELOG
 =========
 
 
+1.2.2+dev     (XXXX-XX-18XX)
+--------------------------
+
+**New features**
+
+* add default embedded font glyphs and use it instead of mapbox glyphs
+
+
 1.2.2         (2026-03-18)
 --------------------------
 

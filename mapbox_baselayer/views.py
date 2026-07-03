@@ -1,3 +1,6 @@
+from copy import deepcopy
+from urllib.parse import unquote
+
 from django.http import JsonResponse
 from django.views import View
 from django.views.generic.detail import BaseDetailView
@@ -12,12 +15,18 @@ class MapboxBaseLayerJsonDetailView(BaseDetailView):
     )  # mapbox provide its own json
 
     def get(self, request, *args, **kwargs):
-        return JsonResponse(self.get_object().tilejson)
+        tilejson = deepcopy(self.get_object().tilejson)
+        glyphs_url = request.build_absolute_uri(tilejson["glyphs"])
+        tilejson["glyphs"] = unquote(glyphs_url)
+        return JsonResponse(tilejson)
 
 
 class DefaultOSMTileJsonView(View):
     def get(self, request, *args, **kwargs):
-        return JsonResponse(DEFAULT_OSM_TILEJSON)
+        tilejson = deepcopy(DEFAULT_OSM_TILEJSON)
+        glyphs_url = request.build_absolute_uri(tilejson["glyphs"])
+        tilejson["glyphs"] = unquote(glyphs_url)
+        return JsonResponse(tilejson)
 
 
 class MapLayerListView(View):
