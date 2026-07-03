@@ -99,7 +99,7 @@ class InstallLayerIGNMultipleLayers(TestCase):
         layer = MapBaseLayer.objects.get(name="Plan IGN VT")
         self.assertEqual(layer.base_layer_type, "mapbox")
         self.assertEqual(layer.tile_size, 512)
-        self.assertIn("vectorTiles", layer.map_box_url)
+        self.assertIn("vectorTiles", layer.style_url)
 
 
 class InstallLayerIGNWithKey(TestCase):

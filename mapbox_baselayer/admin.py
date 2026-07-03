@@ -21,7 +21,7 @@ class BaseLayerTileInline(admin.TabularInline):
 class RasterForm(forms.ModelForm):
     class Meta:
         model = MapBaseLayer
-        exclude = ("map_box_url", "is_overlay", "base_layer_type")
+        exclude = ("style_url", "is_overlay", "base_layer_type")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -35,7 +35,7 @@ class StyleForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["map_box_url"].required = True
+        self.fields["style_url"].required = True
 
 
 class RasterAdminMixin:
@@ -74,7 +74,7 @@ class StyleAdminMixin:
             {
                 "fields": (
                     ("name", "slug"),
-                    "map_box_url",
+                    "style_url",
                     ("enabled", "order"),
                     "attribution",
                 )

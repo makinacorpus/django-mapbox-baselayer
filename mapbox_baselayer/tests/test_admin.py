@@ -16,9 +16,9 @@ class RasterFormTestCase(TestCase):
 
 
 class StyleFormTestCase(TestCase):
-    def test_map_box_url_required(self):
+    def test_style_url_required(self):
         form = StyleForm()
-        self.assertTrue(form.fields["map_box_url"].required)
+        self.assertTrue(form.fields["style_url"].required)
 
 
 class LayerAdminTestCase(TestCase):

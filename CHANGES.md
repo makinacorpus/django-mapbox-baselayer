@@ -9,6 +9,10 @@ CHANGELOG
 
 * add default embedded font glyphs and use it instead of mapbox glyphs
 
+**Improvements**
+
+* Replace map_box_url by style_url
+
 
 1.2.2         (2026-03-18)
 --------------------------

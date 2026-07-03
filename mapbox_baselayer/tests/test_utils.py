@@ -35,14 +35,14 @@ class GetMapBaseLayersTestCase(TestCase):
         MapBaseLayer.objects.create(
             name="Base layer 1",
             base_layer_type="mapbox",
-            map_box_url="mapbox://style1",
+            style_url="mapbox://style1",
             enabled=True,
             is_overlay=False,
         )
         MapBaseLayer.objects.create(
             name="Base layer 2",
             base_layer_type="mapbox",
-            map_box_url="mapbox://style2",
+            style_url="mapbox://style2",
             enabled=True,
             is_overlay=False,
         )
@@ -108,7 +108,7 @@ class GetMapBaseLayersTestCase(TestCase):
         base_layer = MapBaseLayer.objects.create(
             name="Base layer",
             base_layer_type="mapbox",
-            map_box_url="mapbox://base",
+            style_url="mapbox://base",
             enabled=True,
             is_overlay=False,
         )
@@ -141,14 +141,14 @@ class GetMapBaseLayersTestCase(TestCase):
         MapBaseLayer.objects.create(
             name="Enabled base",
             base_layer_type="mapbox",
-            map_box_url="mapbox://enabled",
+            style_url="mapbox://enabled",
             enabled=True,
             is_overlay=False,
         )
         MapBaseLayer.objects.create(
             name="Disabled base",
             base_layer_type="mapbox",
-            map_box_url="mapbox://disabled",
+            style_url="mapbox://disabled",
             enabled=False,
             is_overlay=False,
         )

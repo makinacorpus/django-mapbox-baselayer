@@ -55,7 +55,7 @@ class MapBaseLayerViewTestCase(TestCase):
             name="Mapbox layer",
             order=0,
             base_layer_type="mapbox",
-            map_box_url="mapbox://mystyle",
+            style_url="mapbox://mystyle",
         )
 
     def test_tilejson_raster(self):
