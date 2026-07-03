@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User
 from django.test import RequestFactory, TestCase
@@ -31,7 +33,9 @@ class EmptyDatabaseTestCase(TestCase):
         response = self.client.get(reverse("mapbox_baselayer:default-osm-tilejson"))
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(data, DEFAULT_OSM_TILEJSON)
+        osm_tilejson = deepcopy(DEFAULT_OSM_TILEJSON)
+        osm_tilejson["glyphs"] = f"http://testserver{DEFAULT_OSM_TILEJSON['glyphs']}"
+        self.assertEqual(data, osm_tilejson)
         self.assertIn("osm", data["sources"])
         self.assertEqual(len(data["sources"]["osm"]["tiles"]), 3)
 

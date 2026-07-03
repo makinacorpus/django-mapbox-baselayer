@@ -1,5 +1,6 @@
 from django.urls import reverse
 
+from mapbox_baselayer import settings
 from mapbox_baselayer.models import MapBaseLayer
 
 DEFAULT_OSM_TILEJSON = {
@@ -25,7 +26,7 @@ DEFAULT_OSM_TILEJSON = {
             "source": "osm",
         }
     ],
-    "glyphs": "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
+    "glyphs": settings.GLYPHS_URL,
 }
 
 
