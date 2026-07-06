@@ -31,5 +31,30 @@ class DefaultOSMTileJsonView(View):
 
 class MapLayerListView(View):
     def get(self, request, *args, **kwargs):
-        results = get_map_base_layers()
+        results = get_map_base_layers(request)
         return JsonResponse(results)
+
+
+class PMTilesView(View):
+    def get(self, request, *args, **kwargs):
+        data = [
+            {
+                "pmtiles_url": request.build_absolute_uri(pmtiles.pmtiles_file.url),
+                "json_style_url": request.build_absolute_uri(pmtiles.pmtiles_style.url),
+                "name": pmtiles.name,
+                "content-length": pmtiles.pmtiles_file.size,
+                "options": {
+                    "attribution": pmtiles.layer.attribution,
+                    "center": [
+                        pmtiles.bbox.centroid.coords[0],
+                        pmtiles.bbox.centroid.coords[1],
+                    ],
+                    "maxBounds": pmtiles.bbox.extent,
+                    "maxZoom": pmtiles.layer.max_zoom,
+                    "minZoom": pmtiles.layer.min_zoom,
+                    "zoom": 0,
+                },
+            }
+            for pmtiles in models.PMTile.objects.all().order_by("name")
+        ]
+        return JsonResponse(data, safe=False)

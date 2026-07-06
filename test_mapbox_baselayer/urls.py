@@ -14,6 +14,8 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
@@ -23,4 +25,8 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", MapExampleView.as_view(), name="example"),
     path("", include("mapbox_baselayer.urls", namespace="mapbox_baselayer")),
+    # serve media in dev
+    path("media/<path:path>", include("django.contrib.staticfiles.urls")),
 ]
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

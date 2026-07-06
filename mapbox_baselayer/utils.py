@@ -1,7 +1,7 @@
 from django.urls import reverse
 
-from mapbox_baselayer import settings
 from mapbox_baselayer.models import MapBaseLayer
+from mapbox_baselayer.settings import default_config
 
 DEFAULT_OSM_TILEJSON = {
     "version": 8,
@@ -26,11 +26,11 @@ DEFAULT_OSM_TILEJSON = {
             "source": "osm",
         }
     ],
-    "glyphs": settings.GLYPHS_URL,
+    "glyphs": default_config["GLYPHS_URL"],
 }
 
 
-def get_map_base_layers():
+def get_map_base_layers(request):
     layers = list(MapBaseLayer.objects.filter(enabled=True))
     base_layers = [layer for layer in layers if not layer.is_overlay]
     overlay_layers = [layer for layer in layers if layer.is_overlay]

@@ -24,7 +24,11 @@ classifiers = [
 ]
 dependencies = [
     "django>=4.2",
-    "requests"
+    "requests",
+    "pmtiles",
+    "tqdm",
+    "mercantile",
+    "certifi"
 ]
 
 [project.urls]

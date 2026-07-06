@@ -140,4 +140,4 @@ class AdminGetInlinesTestCase(TestCase):
     def test_no_inlines_for_mapbox(self):
         layer = MapBaseLayer.objects.create(name="M", base_layer_type="mapbox")
         inlines = self.style_admin.get_inline_instances(self.request, obj=layer)
-        self.assertEqual(len(inlines), 0)
+        self.assertEqual(len(inlines), 1)

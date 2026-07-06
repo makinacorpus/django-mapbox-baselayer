@@ -27,8 +27,13 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
-
 # Application definition
+MAP_UTILS_CONFIG = {
+    "TMP_FOLDER": "/tmp",
+}
+
+MEDIA_ROOT = "media"
+MEDIA_URL = "/media/"
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -37,6 +42,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.gis",
     "mapbox_baselayer",
     "test_mapbox_baselayer.test_app",
 ]
@@ -80,7 +86,7 @@ WSGI_APPLICATION = "test_mapbox_baselayer.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
+        "ENGINE": "django.contrib.gis.db.backends.spatialite",
         "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
     }
 }
