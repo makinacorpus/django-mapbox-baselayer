@@ -183,7 +183,7 @@ class Command(BaseCommand):
                     tile_size=512,
                     is_overlay=overlay,
                     attribution="© IGN - GeoPortail",
-                    map_box_url=style["url"],
+                    style_url=style["url"],
                     order=order,
                 )
         self.stdout.write(self.style.SUCCESS("IGN layer(s) created."))

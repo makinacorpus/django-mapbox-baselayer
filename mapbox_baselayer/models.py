@@ -1,5 +1,8 @@
+import hashlib
 import uuid
 
+import requests
+from django.core.cache import cache
 from django.db import models
 from django.db.models import TextChoices
 from django.urls import reverse
@@ -45,7 +48,7 @@ class MapBaseLayer(models.Model):
         blank=False,
         verbose_name=_("Layer type"),
     )
-    map_box_url = models.CharField(
+    style_url = models.CharField(
         max_length=255,
         blank=True,
         help_text=_("Should start by http(s):// or mapbox://"),
@@ -129,24 +132,39 @@ class MapBaseLayer(models.Model):
 
     @cached_property
     def tilejson(self):
-        data = {
-            "version": 8,
-            "sources": {
-                f"{self.slug}": self.get_source(),
-            },
-            "layers": [
-                {
-                    "id": f"{self.slug}-background",
-                    "type": f"{self.base_layer_type}",
-                    "source": f"{self.slug}",
-                }
-            ],
-        }
-        # prevents mapbox problems by set glyphs and sprite only if specified
-        if self.sprite:
-            data["sprite"] = self.sprite
+        if self.base_layer_type == self.LayerType.STYLE_URL:
+            # get real url
+            real_url = self.real_url
+            cache_key = hashlib.md5(self.slug.encode()).hexdigest()
+            data = cache.get(cache_key)
+            if data is None:
+                data = requests.get(real_url).json()
+                cache.set(cache_key, data)
+            # If defined in model, fill missing attributions from the fetched style
+            for source_name, source_data in data.get("sources", {}).items():
+                source_attribution = source_data.get("attribution")
+                if not source_attribution:
+                    source_data["attribution"] = self.attribution
 
-        data["glyphs"] = self.glyphs or settings.GLYPHS_URL
+        else:
+            data = {
+                "version": 8,
+                "sources": {
+                    f"{self.slug}": self.get_source(),
+                },
+                "layers": [
+                    {
+                        "id": f"{self.slug}-background",
+                        "type": f"{self.base_layer_type}",
+                        "source": f"{self.slug}",
+                    }
+                ],
+            }
+            # prevents mapbox problems by set glyphs and sprite only if specified
+            if self.sprite:
+                data["sprite"] = self.sprite
+
+            data["glyphs"] = self.glyphs or settings.GLYPHS_URL
 
         return data
 
@@ -155,7 +173,7 @@ class MapBaseLayer(models.Model):
         if self.base_layer_type != self.LayerType.STYLE_URL:
             return reverse("mapbox_baselayer:tilejson", args=(self.pk,))
         else:
-            return self.map_box_url
+            return self.style_url
 
     @cached_property
     def real_url(self):
@@ -165,9 +183,10 @@ class MapBaseLayer(models.Model):
         ):
             return self.url
         else:
-            return self.map_box_url.replace(
+            url = self.style_url.replace(
                 "mapbox://styles", "https://api.mapbox.com/styles/v1"
             )
+            return url if url.startswith(("http", "mapbox")) else f"https:{url}"
 
 
 class BaseLayerManager(models.Manager):

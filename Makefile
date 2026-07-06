@@ -49,7 +49,7 @@ verbose_level ?= 1
 .PHONY: test
 test:
 	@$(PRINT_COLOR) "$(COLOR_SUCCESS) ### Start tests ### $(COLOR_RESET)\n"
-	./manage.py test $(test_name) --parallel -v $(verbose_level)
+	./manage.py test $(test_name) -v $(verbose_level)
 
 messages_python:
 	./manage.py makemessages -a --no-location --no-obsolete --no-wrap
