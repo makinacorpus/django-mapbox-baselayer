@@ -140,7 +140,7 @@ class MapBaseLayer(models.Model):
             if data is None:
                 data = requests.get(real_url).json()
                 cache.set(cache_key, data)
-            # if defined in model, override attributions
+            # If defined in model, fill missing attributions from the fetched style
             for source_name, source_data in data.get("sources", {}).items():
                 source_attribution = source_data.get("attribution")
                 if not source_attribution:
