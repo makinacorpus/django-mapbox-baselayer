@@ -170,7 +170,10 @@ class MapBaseLayer(models.Model):
 
     @cached_property
     def url(self):
-        return reverse("mapbox_baselayer:tilejson", args=(self.pk,))
+        if self.base_layer_type != self.LayerType.STYLE_URL:
+            return reverse("mapbox_baselayer:tilejson", args=(self.pk,))
+        else:
+            return self.style_url
 
     @cached_property
     def real_url(self):
@@ -183,7 +186,7 @@ class MapBaseLayer(models.Model):
             url = self.style_url.replace(
                 "mapbox://styles", "https://api.mapbox.com/styles/v1"
             )
-            return url if url.startswith("http") else f"https:{url}"
+            return url if url.startswith(("http", "mapbox")) else f"https:{url}"
 
 
 class BaseLayerManager(models.Manager):

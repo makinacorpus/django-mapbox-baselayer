@@ -15,9 +15,9 @@ class MapboxBaseLayerJsonDetailView(BaseDetailView):
     def get(self, request, *args, **kwargs):
         tilejson = deepcopy(self.get_object().tilejson)
         glyphs_url = tilejson.get("glyphs")
-        if glyphs_url and not glyphs_url.startswith("http"):
+        if glyphs_url and not glyphs_url.startswith(("http", "mapbox")):
             glyphs_url = request.build_absolute_uri(tilejson["glyphs"])
-        tilejson["glyphs"] = unquote(glyphs_url)
+            tilejson["glyphs"] = unquote(glyphs_url)
         return JsonResponse(tilejson)
 
 

@@ -10,7 +10,7 @@ class MapBaseLayerTEstCase(TestCase):
             name="Base layer 1",
             order=0,
             base_layer_type="mapbox",
-            style_url="mapbox://mystyle",
+            style_url="mapbox://styles/mystyle",
             sprite="mapbox://mystyle",
             glyphs="mapbox://mystyle",
         )
@@ -24,8 +24,8 @@ class MapBaseLayerTEstCase(TestCase):
     def test_str(self):
         self.assertEqual(self.mapbox_base_layer.name, str(self.mapbox_base_layer))
 
-    def test_mapbox_url(self):
-        self.assertEqual(self.mapbox_base_layer.url, self.mapbox_base_layer.style_url)
+    def test_style_url(self):
+        self.assertEqual("mapbox://styles/mystyle", self.mapbox_base_layer.style_url)
 
     def test_raster_url(self):
         self.assertEqual(

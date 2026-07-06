@@ -12,6 +12,8 @@ CHANGELOG
 **Improvements**
 
 * Replace map_box_url by style_url
+* Override attribution if provided in config
+* Cache styles url
 
 
 1.2.2         (2026-03-18)

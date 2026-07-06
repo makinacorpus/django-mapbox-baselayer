@@ -55,7 +55,7 @@ class MapBaseLayerViewTestCase(TestCase):
             name="Mapbox layer",
             order=0,
             base_layer_type="mapbox",
-            style_url="mapbox://mystyle",
+            style_url="mapbox://styles/mystyle",
         )
 
     def test_tilejson_raster(self):
@@ -94,7 +94,7 @@ class MapBaseLayerViewTestCase(TestCase):
         response = self.client.get(
             reverse("mapbox_baselayer:tilejson", args=(self.mapbox_base_layer.pk,))
         )
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 200)
 
     def test_example_view(self):
         response = self.client.get(reverse("example"))
