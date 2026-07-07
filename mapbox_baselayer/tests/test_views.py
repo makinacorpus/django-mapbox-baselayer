@@ -133,11 +133,13 @@ class AdminGetInlinesTestCase(TestCase):
         self.request.user = User.objects.create_superuser("admin", "a@b.com", "pass")
 
     def test_inlines_for_raster(self):
+        """Raster should have 2 inlines, one for tiles and one for pmtiles"""
         layer = MapBaseLayer.objects.create(name="R", base_layer_type="raster")
         inlines = self.raster_admin.get_inline_instances(self.request, obj=layer)
-        self.assertEqual(len(inlines), 1)
+        self.assertEqual(len(inlines), 2)
 
-    def test_no_inlines_for_mapbox(self):
+    def test_for_style(self):
+        """Style should have 1 inline, for pmtiles"""
         layer = MapBaseLayer.objects.create(name="M", base_layer_type="mapbox")
         inlines = self.style_admin.get_inline_instances(self.request, obj=layer)
         self.assertEqual(len(inlines), 1)

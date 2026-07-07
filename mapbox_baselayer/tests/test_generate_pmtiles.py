@@ -10,6 +10,7 @@ from mapbox_baselayer.models import MapBaseLayer, PMTile
 
 TEMP_MEDIA_ROOT = TemporaryDirectory()
 
+
 @override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT.name)
 class GeneratePMTilesCommandTestCase(TestCase):
     def setUp(self):
