@@ -25,8 +25,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", MapExampleView.as_view(), name="example"),
     path("", include("mapbox_baselayer.urls", namespace="mapbox_baselayer")),
-    # serve media in dev
-    path("media/<path:path>", include("django.contrib.staticfiles.urls")),
 ]
-
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Serve media in dev only
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
