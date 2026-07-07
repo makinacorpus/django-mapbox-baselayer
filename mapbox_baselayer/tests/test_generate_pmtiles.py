@@ -33,6 +33,7 @@ class GeneratePMTilesCommandTestCase(TestCase):
             attribution="Test Attribution",
         )
         self.layer.tiles.create(url="https://tile.openstreetmap.org/{z}/{x}/{y}.png")
+
     def test_generate_pmtiles_creates_pmtile_instance(self):
         # Appel de la commande (on utilise des zooms bas pour aller vite)
         call_command("generate_pmtiles", self.layer.id, minzoom=0, maxzoom=0)
