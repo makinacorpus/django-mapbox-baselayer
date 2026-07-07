@@ -67,7 +67,10 @@ def get_pmtiles(request):
                     pmtiles.bbox.centroid.coords[0],
                     pmtiles.bbox.centroid.coords[1],
                 ],
-                "maxBounds": pmtiles.bbox.extent,
+                "maxBounds": [
+                    [pmtiles.bbox.extent[0], pmtiles.bbox.extent[1]],
+                    [pmtiles.bbox.extent[2], pmtiles.bbox.extent[3]],
+                ],
                 "maxZoom": pmtiles.layer.max_zoom,
                 "minZoom": pmtiles.layer.min_zoom,
                 "zoom": 0,
