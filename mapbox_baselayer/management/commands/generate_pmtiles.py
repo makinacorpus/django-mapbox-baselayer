@@ -19,7 +19,7 @@ from mapbox_baselayer.models import MapBaseLayer, PMTile
 from mapbox_baselayer.settings import default_config
 
 RETRY_COUNT = 3
-TMP_PATH = default_config.get("TMP_PATH")
+TMP_FOLDER = default_config.get("TMP_FOLDER")
 
 
 logger = logging.getLogger(__name__)
@@ -180,8 +180,8 @@ class Command(BaseCommand):
                     t_url = tile_url.format(z=t.z, x=t.x, y=t.y)
                     yield t_id, t_url
 
-        temp_pmtiles = NamedTemporaryFile(dir=TMP_PATH, suffix=".pmtiles")
-        temp_style = NamedTemporaryFile(dir=TMP_PATH, suffix=".json", mode="w")
+        temp_pmtiles = NamedTemporaryFile(dir=TMP_FOLDER, suffix=".pmtiles")
+        temp_style = NamedTemporaryFile(dir=TMP_FOLDER, suffix=".json", mode="w")
 
         with open(temp_pmtiles.name, "wb") as pmtiles_file:
             writer = Writer(pmtiles_file)
