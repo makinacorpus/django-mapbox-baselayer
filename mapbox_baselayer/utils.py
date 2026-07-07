@@ -1,6 +1,6 @@
 from django.urls import reverse
 
-from mapbox_baselayer.models import MapBaseLayer
+from mapbox_baselayer.models import MapBaseLayer, PMTile
 from mapbox_baselayer.settings import default_config
 
 DEFAULT_OSM_TILEJSON = {
@@ -52,3 +52,26 @@ def get_map_base_layers(request):
         ],
     }
     return data
+
+
+def get_pmtiles(request):
+    return [
+        {
+            "pmtiles_url": request.build_absolute_uri(pmtiles.pmtiles_file.url),
+            "json_style_url": request.build_absolute_uri(pmtiles.pmtiles_style.url),
+            "name": pmtiles.name,
+            "content-length": pmtiles.pmtiles_file.size,
+            "options": {
+                "attribution": pmtiles.layer.attribution,
+                "center": [
+                    pmtiles.bbox.centroid.coords[0],
+                    pmtiles.bbox.centroid.coords[1],
+                ],
+                "maxBounds": pmtiles.bbox.extent,
+                "maxZoom": pmtiles.layer.max_zoom,
+                "minZoom": pmtiles.layer.min_zoom,
+                "zoom": 0,
+            },
+        }
+        for pmtiles in PMTile.objects.all().order_by("name")
+    ]

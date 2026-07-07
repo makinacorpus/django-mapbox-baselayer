@@ -6,7 +6,11 @@ from django.views import View
 from django.views.generic.detail import BaseDetailView
 
 from mapbox_baselayer import models
-from mapbox_baselayer.utils import DEFAULT_OSM_TILEJSON, get_map_base_layers
+from mapbox_baselayer.utils import (
+    DEFAULT_OSM_TILEJSON,
+    get_map_base_layers,
+    get_pmtiles,
+)
 
 
 class MapboxBaseLayerJsonDetailView(BaseDetailView):
@@ -37,24 +41,5 @@ class MapLayerListView(View):
 
 class PMTilesView(View):
     def get(self, request, *args, **kwargs):
-        data = [
-            {
-                "pmtiles_url": request.build_absolute_uri(pmtiles.pmtiles_file.url),
-                "json_style_url": request.build_absolute_uri(pmtiles.pmtiles_style.url),
-                "name": pmtiles.name,
-                "content-length": pmtiles.pmtiles_file.size,
-                "options": {
-                    "attribution": pmtiles.layer.attribution,
-                    "center": [
-                        pmtiles.bbox.centroid.coords[0],
-                        pmtiles.bbox.centroid.coords[1],
-                    ],
-                    "maxBounds": pmtiles.bbox.extent,
-                    "maxZoom": pmtiles.layer.max_zoom,
-                    "minZoom": pmtiles.layer.min_zoom,
-                    "zoom": 0,
-                },
-            }
-            for pmtiles in models.PMTile.objects.all().order_by("name")
-        ]
+        data = get_pmtiles(request)
         return JsonResponse(data, safe=False)

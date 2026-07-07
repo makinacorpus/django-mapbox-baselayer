@@ -346,6 +346,9 @@ class PMTile(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        ordering = ("name",)
+
 
 @receiver(post_delete, sender=PMTile)
 def pmtile_post_delete(sender, instance, **kwargs):
