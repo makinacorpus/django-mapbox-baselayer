@@ -1,12 +1,15 @@
 import os
+from tempfile import TemporaryDirectory
 
 from django.contrib.gis.geos import Polygon
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from mapbox_baselayer.models import MapBaseLayer, PMTile
 
+TEMP_MEDIA_ROOT = TemporaryDirectory()
 
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT.name)
 class PMTileDeleteTestCase(TestCase):
     def setUp(self):
         self.layer = MapBaseLayer.objects.create(
