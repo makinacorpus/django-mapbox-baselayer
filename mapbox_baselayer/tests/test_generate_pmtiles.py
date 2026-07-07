@@ -128,6 +128,26 @@ class GeneratePMTilesCommandTestCase(TestCase):
         with self.assertRaises(requests.exceptions.RetryError):
             call_command("generate_pmtiles", style_layer.id, minzoom=0, maxzoom=0)
 
+    @patch("mapbox_baselayer.management.commands.generate_pmtiles.time.sleep")
+    def test_generate_pmtiles_retry_error_contains_http_status_and_message(
+        self, mock_sleep
+    ):
+        import requests
+
+        style_layer = MapBaseLayer.objects.create(
+            name="Style Layer HTTP Error",
+            base_layer_type="mapbox",
+            style_url="http://mock-style-url",
+        )
+        mock_response = Mock(status_code=404, reason="Not Found")
+        http_error = requests.exceptions.HTTPError(response=mock_response)
+        self.mock_get.side_effect = http_error
+
+        with self.assertRaises(requests.exceptions.RetryError) as ctx:
+            call_command("generate_pmtiles", style_layer.id, minzoom=0, maxzoom=0)
+
+        self.assertIn("HTTP 404: Not Found", str(ctx.exception))
+
     def test_generate_pmtiles_zero_tiles(self):
         call_command("generate_pmtiles", self.layer.id, minzoom=2, maxzoom=1)
         self.assertFalse(PMTile.objects.filter(layer=self.layer).exists())
@@ -149,6 +169,27 @@ class GeneratePMTilesCommandTestCase(TestCase):
         ]
         call_command("generate_pmtiles", self.layer.id, minzoom=0, maxzoom=1)
         self.assertTrue(PMTile.objects.filter(layer=self.layer).exists())
+
+    @patch("mapbox_baselayer.management.commands.generate_pmtiles.logger")
+    def test_download_tile_worker_logs_http_status_and_message(self, mock_logger):
+        import requests
+
+        from mapbox_baselayer.management.commands.generate_pmtiles import Command
+
+        command = Command()
+        retry_error = requests.exceptions.RetryError(
+            "Failed after 3 attempts for http://mock-tile: HTTP 503: Service Unavailable"
+        )
+
+        with patch.object(command, "get_or_retry", side_effect=retry_error):
+            tile_id, content = command.download_tile_worker(1, "http://mock-tile")
+
+        self.assertEqual(tile_id, 1)
+        self.assertIsNone(content)
+        mock_logger.error.assert_called_once()
+        self.assertIn(
+            "HTTP 503: Service Unavailable", str(mock_logger.error.call_args[0][2])
+        )
 
     @patch("mapbox_baselayer.management.commands.generate_pmtiles.wait")
     def test_generate_pmtiles_large_number_of_tiles(self, mock_wait):
