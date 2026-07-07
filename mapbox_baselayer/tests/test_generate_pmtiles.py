@@ -1,6 +1,7 @@
 import os
 import shutil
 from tempfile import TemporaryDirectory
+from unittest.mock import Mock, patch
 
 from django.core.management import call_command
 from django.test import TestCase, override_settings
@@ -12,6 +13,17 @@ TEMP_MEDIA_ROOT = TemporaryDirectory()
 @override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT.name)
 class GeneratePMTilesCommandTestCase(TestCase):
     def setUp(self):
+        patcher = patch(
+            "mapbox_baselayer.management.commands.generate_pmtiles.requests.get"
+        )
+        self.mock_get = patcher.start()
+        self.addCleanup(patcher.stop)
+
+        mock_response = Mock()
+        mock_response.raise_for_status.return_value = None
+        mock_response.content = b"dummy tile bytes"
+        self.mock_get.return_value = mock_response
+
         self.layer = MapBaseLayer.objects.create(
             name="Test Layer",
             base_layer_type="raster",
@@ -20,7 +32,6 @@ class GeneratePMTilesCommandTestCase(TestCase):
             attribution="Test Attribution",
         )
         self.layer.tiles.create(url="https://tile.openstreetmap.org/{z}/{x}/{y}.png")
-
     def test_generate_pmtiles_creates_pmtile_instance(self):
         # Appel de la commande (on utilise des zooms bas pour aller vite)
         call_command("generate_pmtiles", self.layer.id, minzoom=0, maxzoom=0)
