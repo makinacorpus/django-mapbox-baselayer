@@ -6,7 +6,11 @@ from django.views import View
 from django.views.generic.detail import BaseDetailView
 
 from mapbox_baselayer import models
-from mapbox_baselayer.utils import DEFAULT_OSM_TILEJSON, get_map_base_layers
+from mapbox_baselayer.utils import (
+    DEFAULT_OSM_TILEJSON,
+    get_map_base_layers,
+    get_pmtiles,
+)
 
 
 class MapboxBaseLayerJsonDetailView(BaseDetailView):
@@ -31,5 +35,11 @@ class DefaultOSMTileJsonView(View):
 
 class MapLayerListView(View):
     def get(self, request, *args, **kwargs):
-        results = get_map_base_layers()
+        results = get_map_base_layers(request)
         return JsonResponse(results)
+
+
+class PMTilesView(View):
+    def get(self, request, *args, **kwargs):
+        data = get_pmtiles(request)
+        return JsonResponse(data, safe=False)

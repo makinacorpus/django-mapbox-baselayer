@@ -1,27 +1,52 @@
 import hashlib
+import os
 import uuid
 
 import requests
+from django.contrib.gis.db import models
 from django.core.cache import cache
-from django.db import models
-from django.db.models import TextChoices
+from django.core.validators import FileExtensionValidator
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 from django.urls import reverse
 from django.utils.functional import cached_property
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
-from mapbox_baselayer import settings
+from mapbox_baselayer.choices import LayerType
+from mapbox_baselayer.managers import (
+    BaseLayerManager,
+    BaseLayerRasterManager,
+    BaseLayerStyleManager,
+    OverlayLayerManager,
+    OverlayRasterManager,
+    OverlayStyleManager,
+)
+from mapbox_baselayer.settings import default_config
 from mapbox_baselayer.validators import (
     validate_only_required_tokens_in_tile_url,
     validate_required_token_in_tile_url,
 )
 
 
+def pmtile_path_handler(instance, filename):
+    base_layer_slug = instance.layer.slug
+    name_slug = slugify(instance.name)
+    extension = os.path.splitext(filename)[1].lower()
+
+    if extension == ".pmtiles":
+        type_name = "tiles"
+    elif extension == ".json":
+        type_name = "style"
+    else:
+        type_name = "other"
+
+    unique = instance.pk or uuid.uuid4().hex
+    return f"map-utils/pmtiles/{base_layer_slug}/{name_slug}-{unique}-{type_name}{extension}"
+
+
 class MapBaseLayer(models.Model):
-    class LayerType(TextChoices):
-        STYLE_URL = "mapbox", _("Style URL")
-        RASTER = "raster", _("Raster tiles")
-        VECTOR = "vector", _("Vector tiles")
+    LayerType = LayerType
 
     name = models.CharField(max_length=50, unique=True, verbose_name=_("Name"))
     is_overlay = models.BooleanField(
@@ -164,7 +189,7 @@ class MapBaseLayer(models.Model):
             if self.sprite:
                 data["sprite"] = self.sprite
 
-            data["glyphs"] = self.glyphs or settings.GLYPHS_URL
+            data["glyphs"] = self.glyphs or default_config["GLYPHS_URL"]
 
         return data
 
@@ -187,16 +212,6 @@ class MapBaseLayer(models.Model):
                 "mapbox://styles", "https://api.mapbox.com/styles/v1"
             )
             return url if url.startswith(("http", "mapbox")) else f"https:{url}"
-
-
-class BaseLayerManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().filter(is_overlay=False)
-
-
-class OverlayLayerManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().filter(is_overlay=True)
 
 
 class BaseLayer(MapBaseLayer):
@@ -227,42 +242,6 @@ class OverlayLayer(MapBaseLayer):
     def save(self, *args, **kwargs):
         self.is_overlay = True
         super().save(*args, **kwargs)
-
-
-class BaseLayerRasterManager(models.Manager):
-    def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .filter(is_overlay=False, base_layer_type=MapBaseLayer.LayerType.RASTER)
-        )
-
-
-class BaseLayerStyleManager(models.Manager):
-    def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .filter(is_overlay=False, base_layer_type=MapBaseLayer.LayerType.STYLE_URL)
-        )
-
-
-class OverlayRasterManager(models.Manager):
-    def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .filter(is_overlay=True, base_layer_type=MapBaseLayer.LayerType.RASTER)
-        )
-
-
-class OverlayStyleManager(models.Manager):
-    def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .filter(is_overlay=True, base_layer_type=MapBaseLayer.LayerType.STYLE_URL)
-        )
 
 
 class BaseLayerRaster(MapBaseLayer):
@@ -335,3 +314,43 @@ class BaseLayerTile(models.Model):
 
     def __str__(self):
         return f"{self.base_layer.name} - {self.url}"
+
+
+class PMTile(models.Model):
+    name = models.CharField(max_length=50, verbose_name=_("Name"))
+    layer = models.ForeignKey(
+        MapBaseLayer,
+        related_name="offline_tilesets",
+        on_delete=models.CASCADE,
+        verbose_name=_("Layer"),
+    )
+    pmtiles_file = models.FileField(
+        upload_to=pmtile_path_handler,
+        verbose_name=_("PMTiles file"),
+        validators=[FileExtensionValidator(allowed_extensions=["pmtiles"])],
+    )
+    pmtiles_style = models.FileField(
+        upload_to=pmtile_path_handler,
+        verbose_name=_("PMTiles style"),
+        validators=[FileExtensionValidator(allowed_extensions=["json"])],
+    )
+    min_zoom = models.PositiveSmallIntegerField(
+        verbose_name=_("Minimum zoom level"), default=0
+    )
+    max_zoom = models.PositiveSmallIntegerField(
+        verbose_name=_("Maximum zoom level"), default=18
+    )
+    bbox = models.PolygonField()
+    notes = models.TextField(blank=True, verbose_name=_("Notes"))
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ("name",)
+
+
+@receiver(post_delete, sender=PMTile)
+def pmtile_post_delete(sender, instance, **kwargs):
+    instance.pmtiles_file.delete(save=False)
+    instance.pmtiles_style.delete(save=False)

@@ -1,7 +1,7 @@
 from django.urls import reverse
 
-from mapbox_baselayer import settings
-from mapbox_baselayer.models import MapBaseLayer
+from mapbox_baselayer.models import MapBaseLayer, PMTile
+from mapbox_baselayer.settings import default_config
 
 DEFAULT_OSM_TILEJSON = {
     "version": 8,
@@ -26,11 +26,11 @@ DEFAULT_OSM_TILEJSON = {
             "source": "osm",
         }
     ],
-    "glyphs": settings.GLYPHS_URL,
+    "glyphs": default_config["GLYPHS_URL"],
 }
 
 
-def get_map_base_layers():
+def get_map_base_layers(request):
     layers = list(MapBaseLayer.objects.filter(enabled=True))
     base_layers = [layer for layer in layers if not layer.is_overlay]
     overlay_layers = [layer for layer in layers if layer.is_overlay]
@@ -52,3 +52,26 @@ def get_map_base_layers():
         ],
     }
     return data
+
+
+def get_pmtiles(request):
+    return [
+        {
+            "pmtiles_url": request.build_absolute_uri(pmtiles.pmtiles_file.url),
+            "json_style_url": request.build_absolute_uri(pmtiles.pmtiles_style.url),
+            "name": pmtiles.name,
+            "content-length": pmtiles.pmtiles_file.size,
+            "options": {
+                "attribution": pmtiles.layer.attribution,
+                "center": [
+                    pmtiles.bbox.centroid.coords[0],
+                    pmtiles.bbox.centroid.coords[1],
+                ],
+                "maxBounds": pmtiles.bbox.extent,
+                "maxZoom": pmtiles.layer.max_zoom,
+                "minZoom": pmtiles.layer.min_zoom,
+                "zoom": 0,
+            },
+        }
+        for pmtiles in PMTile.objects.all().order_by("name")
+    ]

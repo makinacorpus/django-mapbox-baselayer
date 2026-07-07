@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
 from mapbox_baselayer.models import MapBaseLayer
@@ -15,7 +15,7 @@ class GetMapBaseLayersTestCase(TestCase):
             enabled=False,
         )
 
-        data = get_map_base_layers()
+        data = get_map_base_layers(RequestFactory().get("/"))
 
         self.assertIn("base_layers", data)
         self.assertIn("overlay_layers", data)
@@ -47,7 +47,7 @@ class GetMapBaseLayersTestCase(TestCase):
             is_overlay=False,
         )
 
-        data = get_map_base_layers()
+        data = get_map_base_layers(RequestFactory().get("/"))
 
         self.assertIn("base_layers", data)
         self.assertIn("overlay_layers", data)
@@ -80,7 +80,7 @@ class GetMapBaseLayersTestCase(TestCase):
             is_overlay=True,
         )
 
-        data = get_map_base_layers()
+        data = get_map_base_layers(RequestFactory().get("/"))
 
         self.assertIn("base_layers", data)
         self.assertIn("overlay_layers", data)
@@ -119,7 +119,7 @@ class GetMapBaseLayersTestCase(TestCase):
             is_overlay=True,
         )
 
-        data = get_map_base_layers()
+        data = get_map_base_layers(RequestFactory().get("/"))
 
         self.assertIn("base_layers", data)
         self.assertIn("overlay_layers", data)
@@ -165,7 +165,7 @@ class GetMapBaseLayersTestCase(TestCase):
             is_overlay=True,
         )
 
-        data = get_map_base_layers()
+        data = get_map_base_layers(RequestFactory().get("/"))
 
         # Only enabled layers should be present
         self.assertEqual(len(data["base_layers"]), 1)
@@ -176,7 +176,7 @@ class GetMapBaseLayersTestCase(TestCase):
 
     def test_empty_database_returns_default_osm(self):
         """Test that an empty database returns the default OSM layer."""
-        data = get_map_base_layers()
+        data = get_map_base_layers(RequestFactory().get("/"))
 
         self.assertIn("base_layers", data)
         self.assertIn("overlay_layers", data)

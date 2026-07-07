@@ -51,7 +51,7 @@ jobs:
     - name: Install system dependencies
       run: |
         sudo apt-get update
-        sudo apt-get -y install gettext
+        sudo apt-get -y install gettext libproj-dev binutils gdal-bin libsqlite3-mod-spatialite
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v6

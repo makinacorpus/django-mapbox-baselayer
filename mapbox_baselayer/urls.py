@@ -16,4 +16,5 @@ urlpatterns = [
         name="default-osm-tilejson",
     ),
     path("mapbox-baselayers/", views.MapLayerListView.as_view(), name="baselayer-list"),
+    path("pmtiles/", views.PMTilesView.as_view(), name="pmtiles-list"),
 ]

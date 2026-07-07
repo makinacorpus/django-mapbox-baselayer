@@ -1,5 +1,7 @@
 from django import forms
 from django.contrib import admin
+from django.contrib.gis.db.models import GeometryField
+from django.contrib.gis.forms import OSMWidget
 from django.utils.translation import gettext_lazy as _
 
 from mapbox_baselayer.models import (
@@ -9,7 +11,30 @@ from mapbox_baselayer.models import (
     MapBaseLayer,
     OverlayRaster,
     OverlayStyle,
+    PMTile,
 )
+
+
+class PMTilesInline(admin.StackedInline):
+    model = PMTile
+    extra = 0
+    readonly_fields = ("pmtiles_file", "pmtiles_style", "min_zoom", "max_zoom")
+
+    formfield_overrides = {
+        GeometryField: {
+            "widget": OSMWidget(
+                attrs={
+                    "map_width": 400,
+                    "map_height": 200,
+                    "display_wkt": False,
+                    "disabled": True,
+                }
+            )
+        },
+    }
+
+    def has_add_permission(self, request, obj=None):
+        return False
 
 
 class BaseLayerTileInline(admin.TabularInline):
@@ -40,7 +65,7 @@ class StyleForm(forms.ModelForm):
 
 class RasterAdminMixin:
     form = RasterForm
-    inlines = [BaseLayerTileInline]
+    inlines = [BaseLayerTileInline, PMTilesInline]
     readonly_fields = ("slug",)
 
     fieldsets = (
@@ -66,7 +91,9 @@ class RasterAdminMixin:
 
 class StyleAdminMixin:
     form = StyleForm
-    inlines = []
+    inlines = [
+        PMTilesInline,
+    ]
     readonly_fields = ("slug",)
     fieldsets = (
         (
