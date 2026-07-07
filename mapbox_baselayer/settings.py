@@ -12,6 +12,8 @@ default_config = {
     "DEFAULT_MIN_ZOOM": 0,
     "DEFAULT_MAX_ZOOM": 17,
     "MAX_WORKERS": 10,
+    "USER_AGENT": "django-map-utils.com/1.0 (+https://django-map-utils.com; contact@django-map-utils.com)",
+    "REFERRER": "https://django-map-utils.com/map",
 }
 
 if hasattr(settings, "MAP_UTILS_CONFIG"):

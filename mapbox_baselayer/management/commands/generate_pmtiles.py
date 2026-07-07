@@ -86,7 +86,10 @@ class Command(BaseCommand):
         for attempt in range(RETRY_COUNT):
             try:
                 response = requests.get(
-                    url, timeout=30, headers={"User-Agent": "MapboxBaselayer/1.0"}
+                    url, timeout=30, headers={
+                        "User-Agent": default_config.get("USER_AGENT"),
+                        "Referer": default_config.get("REFERRER"),
+                        "Cache-Control": "max-age=0"}
                 )
                 response.raise_for_status()
                 return response
