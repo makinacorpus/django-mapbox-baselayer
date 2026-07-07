@@ -1,6 +1,13 @@
 CHANGELOG
 =========
 
+1.4.0         (2026-07-07)
+--------------------------
+
+**New features**
+
+* Generate and store and serve PMtiles from layers definition.
+
 
 1.3.0         (2026-07-06)
 --------------------------
