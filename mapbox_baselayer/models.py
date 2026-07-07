@@ -41,7 +41,8 @@ def pmtile_path_handler(instance, filename):
     else:
         type_name = "other"
 
-    return f"map-utils/pmtiles/{base_layer_slug}/{name_slug}-{type_name}{extension}"
+    unique = instance.pk or uuid.uuid4().hex
+    return f"map-utils/pmtiles/{base_layer_slug}/{name_slug}-{unique}-{type_name}{extension}"
 
 
 class MapBaseLayer(models.Model):
