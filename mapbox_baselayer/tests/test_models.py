@@ -1,4 +1,5 @@
 from unittest.mock import Mock, patch
+
 from django.contrib.gis.geos import Polygon
 from django.test import TestCase
 from django.urls import reverse
@@ -161,7 +162,9 @@ class PMTileModelTestCase(TestCase):
         self.assertTrue(path.endswith("-other.txt"))
 
     def test_save_existing_updates_slug(self):
-        layer = MapBaseLayer.objects.create(name="Original Name", base_layer_type="raster")
+        layer = MapBaseLayer.objects.create(
+            name="Original Name", base_layer_type="raster"
+        )
         layer.name = "New Name"
         layer.save()
         layer.refresh_from_db()
@@ -173,16 +176,13 @@ class PMTileModelTestCase(TestCase):
         mock_response.json.return_value = {
             "version": 8,
             "sources": {
-                "source1": {
-                    "type": "vector",
-                    "tiles": ["http://tiles"]
-                },
+                "source1": {"type": "vector", "tiles": ["http://tiles"]},
                 "source2": {
                     "type": "vector",
                     "tiles": ["http://tiles"],
-                    "attribution": "Existing Attribution"
-                }
-            }
+                    "attribution": "Existing Attribution",
+                },
+            },
         }
         mock_get.return_value = mock_response
 
@@ -190,10 +190,12 @@ class PMTileModelTestCase(TestCase):
             name="Style Layer",
             base_layer_type="mapbox",
             style_url="http://style-url",
-            attribution="Layer Attribution"
+            attribution="Layer Attribution",
         )
 
         data = layer.tilejson
 
         self.assertEqual(data["sources"]["source1"]["attribution"], "Layer Attribution")
-        self.assertEqual(data["sources"]["source2"]["attribution"], "Existing Attribution")
+        self.assertEqual(
+            data["sources"]["source2"]["attribution"], "Existing Attribution"
+        )

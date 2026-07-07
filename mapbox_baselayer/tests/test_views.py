@@ -101,11 +101,8 @@ class MapBaseLayerViewTestCase(TestCase):
         mock_response.json.return_value = {
             "version": 8,
             "sources": {
-                "mapbox": {
-                    "type": "vector",
-                    "url": "mapbox://mapbox.mapbox-streets-v7"
-                }
-            }
+                "mapbox": {"type": "vector", "url": "mapbox://mapbox.mapbox-streets-v7"}
+            },
         }
         mock_get.return_value = mock_response
         response = self.client.get(
@@ -191,7 +188,7 @@ class ViewsCoverageTestCase(TestCase):
             min_zoom=3,
             max_zoom=10,
         )
-        pmtile = PMTile.objects.create(
+        PMTile.objects.create(
             name="Test Offline PMTile",
             layer=layer,
             pmtiles_file=SimpleUploadedFile("test.pmtiles", b"dummy content"),
