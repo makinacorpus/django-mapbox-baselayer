@@ -1,7 +1,16 @@
+from unittest.mock import Mock, patch
+from django.contrib.gis.geos import Polygon
 from django.test import TestCase
 from django.urls import reverse
 
-from mapbox_baselayer.models import BaseLayer, BaseLayerTile, MapBaseLayer, OverlayLayer
+from mapbox_baselayer.models import (
+    BaseLayer,
+    BaseLayerTile,
+    MapBaseLayer,
+    OverlayLayer,
+    PMTile,
+    pmtile_path_handler,
+)
 
 
 class MapBaseLayerTEstCase(TestCase):
@@ -131,3 +140,60 @@ class BaseLayerTileStrTestCase(TestCase):
             base_layer=layer, url="http://example.com/{z}/{x}/{y}.png"
         )
         self.assertEqual(str(tile), "Test - http://example.com/{z}/{x}/{y}.png")
+
+
+class PMTileModelTestCase(TestCase):
+    def setUp(self):
+        self.layer = MapBaseLayer.objects.create(
+            name="Test Base Layer", base_layer_type="raster"
+        )
+        self.pmtile = PMTile.objects.create(
+            name="Test PMTile",
+            layer=self.layer,
+            bbox=Polygon.from_bbox((0, 0, 10, 10)),
+        )
+
+    def test_pmtile_str(self):
+        self.assertEqual(str(self.pmtile), "Test PMTile")
+
+    def test_pmtile_path_handler_other(self):
+        path = pmtile_path_handler(self.pmtile, "test.txt")
+        self.assertTrue(path.endswith("-other.txt"))
+
+    def test_save_existing_updates_slug(self):
+        layer = MapBaseLayer.objects.create(name="Original Name", base_layer_type="raster")
+        layer.name = "New Name"
+        layer.save()
+        layer.refresh_from_db()
+        self.assertEqual(layer.slug, f"new-name-{layer.pk}")
+
+    @patch("mapbox_baselayer.models.requests.get")
+    def test_tilejson_style_url_attribution(self, mock_get):
+        mock_response = Mock()
+        mock_response.json.return_value = {
+            "version": 8,
+            "sources": {
+                "source1": {
+                    "type": "vector",
+                    "tiles": ["http://tiles"]
+                },
+                "source2": {
+                    "type": "vector",
+                    "tiles": ["http://tiles"],
+                    "attribution": "Existing Attribution"
+                }
+            }
+        }
+        mock_get.return_value = mock_response
+
+        layer = MapBaseLayer.objects.create(
+            name="Style Layer",
+            base_layer_type="mapbox",
+            style_url="http://style-url",
+            attribution="Layer Attribution"
+        )
+
+        data = layer.tilejson
+
+        self.assertEqual(data["sources"]["source1"]["attribution"], "Layer Attribution")
+        self.assertEqual(data["sources"]["source2"]["attribution"], "Existing Attribution")
