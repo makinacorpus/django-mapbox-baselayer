@@ -65,6 +65,7 @@ class BaseLayerTileInline(admin.TabularInline):
     model = BaseLayerTile
     extra = 0
     min_num = 1
+    validate_min = True
 
 
 class MapBaseLayerForm(forms.ModelForm):
@@ -95,12 +96,8 @@ class MapBaseLayerForm(forms.ModelForm):
             # if they are not in the form
             pass
 
-
     def clean(self):
         cleaned_data = super().clean()
-        if not self.instance or not self.instance.pk:
-            # During creation, only name and base_layer_type are validated
-            return cleaned_data
 
         layer_type = cleaned_data.get("base_layer_type")
         style_url = cleaned_data.get("style_url")
@@ -156,58 +153,25 @@ class MapBaseLayerAdmin(admin.ModelAdmin):
         ),
     )
 
-    def get_fieldsets(self, request, obj=None):
-        if obj is None:
-            return (
-                (
-                    None,
-                    {
-                        "fields": (
-                            "name",
-                            "base_layer_type",
-                        )
-                    },
-                ),
-            )
-        fieldsets = super().get_fieldsets(request, obj)
-        excluded_fields = set()
-        if obj.base_layer_type == LayerType.RASTER:
-            excluded_fields.add("style_url")
-        else:
-            excluded_fields.add("tile_size")
+    def get_formsets_with_inlines(self, request, obj=None):
+        for formset, inline in super().get_formsets_with_inlines(request, obj):
+            if isinstance(inline, BaseLayerTileInline):
+                layer_type = None
+                if obj:
+                    layer_type = obj.base_layer_type
+                elif request.method == "POST":
+                    layer_type = request.POST.get("base_layer_type")
 
-        new_fieldsets = []
-        for label, options in fieldsets:
-            fields = options.get("fields", ())
-            new_fields = []
-            for f in fields:
-                if isinstance(f, (list, tuple)):
-                    filtered_row = [x for x in f if x not in excluded_fields]
-                    if filtered_row:
-                        new_fields.append(
-                            tuple(filtered_row)
-                            if isinstance(f, tuple)
-                            else filtered_row
-                        )
+                if layer_type == LayerType.RASTER:
+                    formset.min_num = 1
+                    formset.validate_min = True
                 else:
-                    if f not in excluded_fields:
-                        new_fields.append(f)
-            if new_fields:
-                new_options = dict(options)
-                new_options["fields"] = tuple(new_fields)
-                new_fieldsets.append((label, new_options))
-        return tuple(new_fieldsets)
-
-    def get_inlines(self, request, obj=None):
-        if obj is None:
-            return []
-        if obj.base_layer_type == LayerType.RASTER:
-            return [BaseLayerTileInline, PMTilesInline]
-        else:
-            return [PMTilesInline]
+                    formset.min_num = 0
+                    formset.validate_min = False
+            yield formset, inline
 
     class Media:
-        js = ("mapbox_baselayer/js/mapbaselayer_admin.js",)
+        js = ("map-utils/js/mapbaselayer_admin.js",)
 
     def get_queryset(self, request):
         return super().get_queryset(request)

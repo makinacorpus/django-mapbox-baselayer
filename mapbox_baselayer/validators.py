@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError
+from django.utils.translation import gettext as _
 
 
 def validate_required_token_in_tile_url(value):
@@ -6,7 +7,9 @@ def validate_required_token_in_tile_url(value):
     required_tokens = ["{z}", "{x}", "{y}"]
     for token in required_tokens:
         if token not in value:
-            msg = f"Tile URL must contain required tokens: {', '.join(required_tokens)}"
+            msg = _("Tile URL must contain required tokens: %(tokens)s") % {
+                "tokens": ", ".join(required_tokens)
+            }
             raise ValidationError(msg)
 
 
@@ -21,8 +24,15 @@ def validate_only_required_tokens_in_tile_url(value):
             if full_token not in allowed_tokens and full_token != "{a}":
                 bad_tokens_in_value.append(full_token)
     if "{a}" in value:
-        msg = "Tile URL cannot contain the '{a}' token, which is not supported for Style URLs. Please add 3 URLs (a, b and c) instead of only once with '{a}'."
+        msg = _(
+            "Tile URL cannot contain the '{a}' token, which is not supported for Style URLs. Please add 3 URLs (a, b and c) instead of only once with '{a}'."
+        )
         raise ValidationError(msg)
     elif bad_tokens_in_value:
-        msg = f"Tile URL contains unsupported tokens: {', '.join(bad_tokens_in_value)}. Only {', '.join(allowed_tokens)} are allowed for Style URLs."
+        msg = _(
+            "Tile URL contains unsupported tokens: %(bad_tokens)s. Only %(allowed_tokens)s are allowed for Style URLs."
+        ) % {
+            "bad_tokens": ", ".join(bad_tokens_in_value),
+            "allowed_tokens": ", ".join(allowed_tokens),
+        }
         raise ValidationError(msg)

@@ -57,10 +57,15 @@ class MapBaseLayerFormTestCase(TestCase):
 
 class MapBaseLayerAdminTestCase(TestCase):
     def setUp(self):
+        from django.contrib.auth.models import User
+
         self.site = AdminSite()
         self.admin = MapBaseLayerAdmin(MapBaseLayer, self.site)
         self.factory = RequestFactory()
         self.request = self.factory.get("/admin/")
+        self.request.user = User.objects.create_superuser(
+            username="admin", email="admin@test.com", password="password"
+        )
 
     def test_get_queryset(self):
         enabled = MapBaseLayer.objects.create(
@@ -78,14 +83,6 @@ class MapBaseLayerAdminTestCase(TestCase):
 
     def test_get_fieldsets_add_view(self):
         fieldsets = self.admin.get_fieldsets(self.request, obj=None)
-        fields = fieldsets[0][1]["fields"]
-        self.assertIn("name", fields)
-        self.assertIn("base_layer_type", fields)
-        self.assertNotIn("style_url", fields)
-
-    def test_get_fieldsets_change_view_raster(self):
-        layer = MapBaseLayer.objects.create(name="test", base_layer_type="raster")
-        fieldsets = self.admin.get_fieldsets(self.request, obj=layer)
         all_fields = []
         for label, opts in fieldsets:
             all_fields.extend(opts["fields"])
@@ -95,12 +92,13 @@ class MapBaseLayerAdminTestCase(TestCase):
                 flat_fields.extend(f)
             else:
                 flat_fields.append(f)
-
-        self.assertNotIn("style_url", flat_fields)
+        self.assertIn("name", flat_fields)
+        self.assertIn("base_layer_type", flat_fields)
+        self.assertIn("style_url", flat_fields)
         self.assertIn("tile_size", flat_fields)
 
-    def test_get_fieldsets_change_view_style(self):
-        layer = MapBaseLayer.objects.create(name="test", base_layer_type="mapbox")
+    def test_get_fieldsets_change_view(self):
+        layer = MapBaseLayer.objects.create(name="test", base_layer_type="raster")
         fieldsets = self.admin.get_fieldsets(self.request, obj=layer)
         all_fields = []
         for label, opts in fieldsets:
@@ -113,16 +111,58 @@ class MapBaseLayerAdminTestCase(TestCase):
                 flat_fields.append(f)
 
         self.assertIn("style_url", flat_fields)
-        self.assertNotIn("tile_size", flat_fields)
+        self.assertIn("tile_size", flat_fields)
 
-    def test_get_inlines_add_view_empty(self):
+    def test_get_inlines_add_view_not_empty(self):
         inlines = self.admin.get_inlines(self.request, obj=None)
-        self.assertEqual(list(inlines), [])
+        self.assertEqual(len(list(inlines)), 2)
 
     def test_get_inlines_change_view_not_empty(self):
         layer = MapBaseLayer.objects.create(name="test", base_layer_type="raster")
         inlines = self.admin.get_inlines(self.request, obj=layer)
-        self.assertNotEqual(list(inlines), [])
+        self.assertEqual(len(list(inlines)), 2)
+
+    def test_get_formsets_with_inlines_raster(self):
+        from mapbox_baselayer.admin import BaseLayerTileInline
+
+        layer = MapBaseLayer.objects.create(name="test", base_layer_type="raster")
+        formsets = list(self.admin.get_formsets_with_inlines(self.request, obj=layer))
+        tile_formset = next(
+            fs for fs, inline in formsets if isinstance(inline, BaseLayerTileInline)
+        )
+        self.assertEqual(tile_formset.min_num, 1)
+
+    def test_get_formsets_with_inlines_style(self):
+        from mapbox_baselayer.admin import BaseLayerTileInline
+
+        layer = MapBaseLayer.objects.create(name="test", base_layer_type="mapbox")
+        formsets = list(self.admin.get_formsets_with_inlines(self.request, obj=layer))
+        tile_formset = next(
+            fs for fs, inline in formsets if isinstance(inline, BaseLayerTileInline)
+        )
+        self.assertEqual(tile_formset.min_num, 0)
+
+    def test_get_formsets_with_inlines_creation_post_raster(self):
+        from mapbox_baselayer.admin import BaseLayerTileInline
+
+        self.request.method = "POST"
+        self.request.POST = {"base_layer_type": "raster"}
+        formsets = list(self.admin.get_formsets_with_inlines(self.request, obj=None))
+        tile_formset = next(
+            fs for fs, inline in formsets if isinstance(inline, BaseLayerTileInline)
+        )
+        self.assertEqual(tile_formset.min_num, 1)
+
+    def test_get_formsets_with_inlines_creation_post_style(self):
+        from mapbox_baselayer.admin import BaseLayerTileInline
+
+        self.request.method = "POST"
+        self.request.POST = {"base_layer_type": "mapbox"}
+        formsets = list(self.admin.get_formsets_with_inlines(self.request, obj=None))
+        tile_formset = next(
+            fs for fs, inline in formsets if isinstance(inline, BaseLayerTileInline)
+        )
+        self.assertEqual(tile_formset.min_num, 0)
 
     def test_has_delete_permission_true(self):
         self.assertTrue(self.admin.has_delete_permission(self.request))
