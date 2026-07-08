@@ -2,47 +2,155 @@ from django.contrib.admin.sites import AdminSite
 from django.test import RequestFactory, TestCase
 
 from mapbox_baselayer.admin import (
-    LayerAdmin,
-    RasterForm,
-    StyleForm,
+    MapBaseLayerAdmin,
+    MapBaseLayerForm,
 )
 from mapbox_baselayer.models import MapBaseLayer
 
 
-class RasterFormTestCase(TestCase):
+class MapBaseLayerFormTestCase(TestCase):
     def test_tile_size_initial_is_256(self):
-        form = RasterForm()
+        form = MapBaseLayerForm()
         self.assertEqual(form.fields["tile_size"].initial, 256)
 
+    def test_style_url_required_for_mapbox(self):
+        layer = MapBaseLayer.objects.create(name="test", base_layer_type="mapbox")
+        form = MapBaseLayerForm(
+            instance=layer,
+            data={"base_layer_type": "mapbox", "name": "test", "style_url": ""},
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("style_url", form.errors)
 
-class StyleFormTestCase(TestCase):
-    def test_style_url_required(self):
-        form = StyleForm()
-        self.assertTrue(form.fields["style_url"].required)
+    def test_clean_when_creating_no_instance(self):
+        form = MapBaseLayerForm(
+            data={
+                "name": "new_layer",
+                "base_layer_type": "raster",
+                "is_overlay": False,
+                "order": 0,
+                "min_zoom": 0,
+                "max_zoom": 22,
+                "tile_size": 256,
+                "enabled": True,
+            }
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+
+    def test_form_init_without_tile_size_field(self):
+        """
+        Reproduce KeyError: 'tile_size' when the field is not in the form.
+        This happens in the admin 'add' view where get_fieldsets limits fields.
+        """
+
+        # Simulate a form that only has 'name' and 'base_layer_type'
+        class LimitedMapBaseLayerForm(MapBaseLayerForm):
+            class Meta(MapBaseLayerForm.Meta):
+                fields = ["name", "base_layer_type"]
+
+        # This should not raise KeyError
+        try:
+            LimitedMapBaseLayerForm()
+        except KeyError as e:
+            self.fail(f"MapBaseLayerForm raised KeyError: {e}")
 
 
-class LayerAdminTestCase(TestCase):
+class MapBaseLayerAdminTestCase(TestCase):
     def setUp(self):
         self.site = AdminSite()
-        self.admin = LayerAdmin(MapBaseLayer, self.site)
+        self.admin = MapBaseLayerAdmin(MapBaseLayer, self.site)
         self.factory = RequestFactory()
         self.request = self.factory.get("/admin/")
 
-    def test_get_queryset_filters_enabled(self):
+    def test_get_queryset(self):
         enabled = MapBaseLayer.objects.create(
             name="Enabled", base_layer_type="raster", enabled=True
         )
-        MapBaseLayer.objects.create(
+        disabled = MapBaseLayer.objects.create(
             name="Disabled", base_layer_type="raster", enabled=False
         )
         qs = self.admin.get_queryset(self.request)
-        self.assertEqual(list(qs), [enabled])
+        self.assertIn(enabled, qs)
+        self.assertIn(disabled, qs)
 
-    def test_has_add_permission_false(self):
-        self.assertFalse(self.admin.has_add_permission(self.request))
+    def test_has_add_permission_true(self):
+        self.assertTrue(self.admin.has_add_permission(self.request))
 
-    def test_has_delete_permission_false(self):
-        self.assertFalse(self.admin.has_delete_permission(self.request))
+    def test_get_fieldsets_add_view(self):
+        fieldsets = self.admin.get_fieldsets(self.request, obj=None)
+        fields = fieldsets[0][1]["fields"]
+        self.assertIn("name", fields)
+        self.assertIn("base_layer_type", fields)
+        self.assertNotIn("style_url", fields)
 
-    def test_has_change_permission_false(self):
-        self.assertFalse(self.admin.has_change_permission(self.request))
+    def test_get_fieldsets_change_view_raster(self):
+        layer = MapBaseLayer.objects.create(name="test", base_layer_type="raster")
+        fieldsets = self.admin.get_fieldsets(self.request, obj=layer)
+        all_fields = []
+        for label, opts in fieldsets:
+            all_fields.extend(opts["fields"])
+        flat_fields = []
+        for f in all_fields:
+            if isinstance(f, (list, tuple)):
+                flat_fields.extend(f)
+            else:
+                flat_fields.append(f)
+
+        self.assertNotIn("style_url", flat_fields)
+        self.assertIn("tile_size", flat_fields)
+
+    def test_get_fieldsets_change_view_style(self):
+        layer = MapBaseLayer.objects.create(name="test", base_layer_type="mapbox")
+        fieldsets = self.admin.get_fieldsets(self.request, obj=layer)
+        all_fields = []
+        for label, opts in fieldsets:
+            all_fields.extend(opts["fields"])
+        flat_fields = []
+        for f in all_fields:
+            if isinstance(f, (list, tuple)):
+                flat_fields.extend(f)
+            else:
+                flat_fields.append(f)
+
+        self.assertIn("style_url", flat_fields)
+        self.assertNotIn("tile_size", flat_fields)
+
+    def test_get_inlines_add_view_empty(self):
+        inlines = self.admin.get_inlines(self.request, obj=None)
+        self.assertEqual(list(inlines), [])
+
+    def test_get_inlines_change_view_not_empty(self):
+        layer = MapBaseLayer.objects.create(name="test", base_layer_type="raster")
+        inlines = self.admin.get_inlines(self.request, obj=layer)
+        self.assertNotEqual(list(inlines), [])
+
+    def test_has_delete_permission_true(self):
+        self.assertTrue(self.admin.has_delete_permission(self.request))
+
+    def test_has_change_permission_true(self):
+        self.assertTrue(self.admin.has_change_permission(self.request))
+
+
+class PMTilesInlineTestCase(TestCase):
+    def test_get_size_with_file(self):
+        from unittest.mock import Mock
+
+        from mapbox_baselayer.admin import PMTilesInline
+        from mapbox_baselayer.models import PMTile
+
+        inline = PMTilesInline(PMTile, AdminSite())
+        pmtile = Mock()
+        pmtile.pmtiles_file = Mock()
+        pmtile.pmtiles_file.size = 2097152  # 2 MB
+        self.assertEqual(inline.get_size(pmtile), "2.00 MB")
+
+    def test_get_size_without_file(self):
+        from unittest.mock import Mock
+
+        from mapbox_baselayer.admin import PMTilesInline
+        from mapbox_baselayer.models import PMTile
+
+        inline = PMTilesInline(PMTile, AdminSite())
+        pmtile = Mock()
+        pmtile.pmtiles_file = None
+        self.assertEqual(inline.get_size(pmtile), "N/A")

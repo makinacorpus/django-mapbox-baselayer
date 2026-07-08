@@ -46,8 +46,6 @@ def pmtile_path_handler(instance, filename):
 
 
 class MapBaseLayer(models.Model):
-    LayerType = LayerType
-
     name = models.CharField(max_length=50, unique=True, verbose_name=_("Name"))
     is_overlay = models.BooleanField(
         default=False,
@@ -102,7 +100,7 @@ class MapBaseLayer(models.Model):
         help_text=_("Maximum zoom level for the layer."),
     )
     tile_size = models.PositiveSmallIntegerField(
-        default=512,
+        default=256,
         verbose_name=_("Tile size"),
         help_text=_("Tile size. Often 256 for raster tiles, 512 for vector tiles."),
     )
@@ -149,7 +147,7 @@ class MapBaseLayer(models.Model):
             "attribution": self.attribution,
         }
 
-        if self.base_layer_type == self.LayerType.RASTER:
+        if self.base_layer_type == LayerType.RASTER:
             # only available for raster layers
             source["tileSize"] = self.tile_size
 
@@ -157,7 +155,7 @@ class MapBaseLayer(models.Model):
 
     @cached_property
     def tilejson(self):
-        if self.base_layer_type == self.LayerType.STYLE_URL:
+        if self.base_layer_type == LayerType.STYLE_URL:
             # get real url
             real_url = self.real_url
             cache_key = hashlib.md5(self.slug.encode()).hexdigest()
@@ -195,17 +193,14 @@ class MapBaseLayer(models.Model):
 
     @cached_property
     def url(self):
-        if self.base_layer_type != self.LayerType.STYLE_URL:
+        if self.base_layer_type != LayerType.STYLE_URL:
             return reverse("mapbox_baselayer:tilejson", args=(self.pk,))
         else:
             return self.style_url
 
     @cached_property
     def real_url(self):
-        if self.base_layer_type not in (
-            self.LayerType.STYLE_URL,
-            self.LayerType.VECTOR,
-        ):
+        if self.base_layer_type != LayerType.STYLE_URL:
             return self.url
         else:
             url = self.style_url.replace(
@@ -254,7 +249,7 @@ class BaseLayerRaster(MapBaseLayer):
 
     def save(self, *args, **kwargs):
         self.is_overlay = False
-        self.base_layer_type = MapBaseLayer.LayerType.RASTER
+        self.base_layer_type = LayerType.RASTER
         super().save(*args, **kwargs)
 
 
@@ -268,7 +263,7 @@ class BaseLayerStyle(MapBaseLayer):
 
     def save(self, *args, **kwargs):
         self.is_overlay = False
-        self.base_layer_type = MapBaseLayer.LayerType.STYLE_URL
+        self.base_layer_type = LayerType.STYLE_URL
         super().save(*args, **kwargs)
 
 
@@ -282,7 +277,7 @@ class OverlayRaster(MapBaseLayer):
 
     def save(self, *args, **kwargs):
         self.is_overlay = True
-        self.base_layer_type = MapBaseLayer.LayerType.RASTER
+        self.base_layer_type = LayerType.RASTER
         super().save(*args, **kwargs)
 
 
@@ -296,7 +291,7 @@ class OverlayStyle(MapBaseLayer):
 
     def save(self, *args, **kwargs):
         self.is_overlay = True
-        self.base_layer_type = MapBaseLayer.LayerType.STYLE_URL
+        self.base_layer_type = LayerType.STYLE_URL
         super().save(*args, **kwargs)
 
 

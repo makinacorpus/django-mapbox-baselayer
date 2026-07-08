@@ -4,6 +4,12 @@ CHANGELOG
 1.4.1+dev     (XXXX-XX-XX)
 --------------------------
 
+**Improvements**
+
+* Admin styles improvements
+* No vector generic type anymore
+
+
 **Bugfixes**
 
 * Default zoom levels for IGN layers

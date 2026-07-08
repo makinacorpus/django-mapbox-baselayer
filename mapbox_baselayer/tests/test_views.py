@@ -9,10 +9,8 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import RequestFactory, TestCase, override_settings
 from django.urls import reverse
 
-from mapbox_baselayer.admin import BaseLayerRasterAdmin, BaseLayerStyleAdmin
+from mapbox_baselayer.admin import MapBaseLayerAdmin
 from mapbox_baselayer.models import (
-    BaseLayerRaster,
-    BaseLayerStyle,
     BaseLayerTile,
     MapBaseLayer,
     PMTile,
@@ -85,7 +83,7 @@ class MapBaseLayerViewTestCase(TestCase):
                     "tiles": ["http://tiles/{x}/{y]/{z}"],
                     "type": "raster",
                     "attribution": "",
-                    "tileSize": 512,
+                    "tileSize": 256,
                 }
             },
             "version": 8,
@@ -141,22 +139,15 @@ class MapBaseLayerViewTestCase(TestCase):
 class AdminGetInlinesTestCase(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
-        self.raster_admin = BaseLayerRasterAdmin(BaseLayerRaster, AdminSite())
-        self.style_admin = BaseLayerStyleAdmin(BaseLayerStyle, AdminSite())
+        self.admin = MapBaseLayerAdmin(MapBaseLayer, AdminSite())
         self.request = self.factory.get("/")
         self.request.user = User.objects.create_superuser("admin", "a@b.com", "pass")
 
-    def test_inlines_for_raster(self):
-        """Raster should have 2 inlines, one for tiles and one for pmtiles"""
+    def test_inlines(self):
+        """MapBaseLayerAdmin should have 2 inlines, one for tiles and one for pmtiles"""
         layer = MapBaseLayer.objects.create(name="R", base_layer_type="raster")
-        inlines = self.raster_admin.get_inline_instances(self.request, obj=layer)
+        inlines = self.admin.get_inline_instances(self.request, obj=layer)
         self.assertEqual(len(inlines), 2)
-
-    def test_for_style(self):
-        """Style should have 1 inline, for pmtiles"""
-        layer = MapBaseLayer.objects.create(name="M", base_layer_type="mapbox")
-        inlines = self.style_admin.get_inline_instances(self.request, obj=layer)
-        self.assertEqual(len(inlines), 1)
 
 
 TEMP_MEDIA_ROOT = TemporaryDirectory()

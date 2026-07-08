@@ -4,13 +4,10 @@ from django.contrib.gis.db.models import GeometryField
 from django.contrib.gis.forms import OSMWidget
 from django.utils.translation import gettext_lazy as _
 
+from mapbox_baselayer.choices import LayerType
 from mapbox_baselayer.models import (
-    BaseLayerRaster,
-    BaseLayerStyle,
     BaseLayerTile,
     MapBaseLayer,
-    OverlayRaster,
-    OverlayStyle,
     PMTile,
 )
 
@@ -70,29 +67,65 @@ class BaseLayerTileInline(admin.TabularInline):
     min_num = 1
 
 
-class RasterForm(forms.ModelForm):
+class MapBaseLayerForm(forms.ModelForm):
     class Meta:
         model = MapBaseLayer
-        exclude = ("style_url", "is_overlay", "base_layer_type")
+        fields = [
+            "name",
+            "is_overlay",
+            "order",
+            "base_layer_type",
+            "style_url",
+            "sprite",
+            "glyphs",
+            "min_zoom",
+            "max_zoom",
+            "tile_size",
+            "attribution",
+            "enabled",
+        ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["tile_size"].initial = 256
+        if self.instance and self.instance.pk:
+            self.fields["base_layer_type"].disabled = True
+        else:
+            # When creating, only name and base_layer_type are shown
+            # but we should ensure other fields don't cause validation issues
+            # if they are not in the form
+            pass
 
 
-class StyleForm(forms.ModelForm):
-    class Meta:
-        model = MapBaseLayer
-        exclude = ("is_overlay", "base_layer_type")
+    def clean(self):
+        cleaned_data = super().clean()
+        if not self.instance or not self.instance.pk:
+            # During creation, only name and base_layer_type are validated
+            return cleaned_data
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["style_url"].required = True
+        layer_type = cleaned_data.get("base_layer_type")
+        style_url = cleaned_data.get("style_url")
+
+        if layer_type == LayerType.STYLE_URL and not style_url:
+            self.add_error(
+                "style_url", _("Style URL is required for Mapbox Style layers.")
+            )
+
+        return cleaned_data
 
 
-class RasterAdminMixin:
-    form = RasterForm
-
+@admin.register(MapBaseLayer)
+class MapBaseLayerAdmin(admin.ModelAdmin):
+    form = MapBaseLayerForm
+    list_display = (
+        "name",
+        "is_overlay",
+        "base_layer_type",
+        "min_zoom",
+        "max_zoom",
+        "enabled",
+    )
+    list_filter = ("is_overlay", "base_layer_type", "enabled")
+    search_fields = ("name", "slug")
     inlines = [BaseLayerTileInline, PMTilesInline]
     readonly_fields = ("slug",)
 
@@ -102,81 +135,88 @@ class RasterAdminMixin:
             {
                 "fields": (
                     ("name", "slug"),
+                    ("is_overlay", "base_layer_type"),
                     ("enabled", "order"),
                     "attribution",
                 )
             },
         ),
         (
-            _("Advanced options"),
+            _("Style options"),
             {
-                "fields": (("min_zoom", "max_zoom"), "sprite", "glyphs", "tile_size"),
-                "classes": ("collapse",),
-            },
-        ),
-    )
-
-
-class StyleAdminMixin:
-    form = StyleForm
-    inlines = [
-        PMTilesInline,
-    ]
-    readonly_fields = ("slug",)
-    fieldsets = (
-        (
-            None,
-            {
-                "fields": (
-                    ("name", "slug"),
-                    "style_url",
-                    ("enabled", "order"),
-                    "attribution",
-                )
+                "fields": ("style_url", "tile_size"),
             },
         ),
         (
             _("Advanced options"),
             {
-                "fields": (("min_zoom", "max_zoom"), "sprite", "glyphs", "tile_size"),
+                "fields": (("min_zoom", "max_zoom"), "sprite", "glyphs"),
                 "classes": ("collapse",),
             },
         ),
     )
 
+    def get_fieldsets(self, request, obj=None):
+        if obj is None:
+            return (
+                (
+                    None,
+                    {
+                        "fields": (
+                            "name",
+                            "base_layer_type",
+                        )
+                    },
+                ),
+            )
+        fieldsets = super().get_fieldsets(request, obj)
+        excluded_fields = set()
+        if obj.base_layer_type == LayerType.RASTER:
+            excluded_fields.add("style_url")
+        else:
+            excluded_fields.add("tile_size")
 
-@admin.register(MapBaseLayer)
-class LayerAdmin(admin.ModelAdmin):
-    list_display = ("name", "is_overlay", "min_zoom", "max_zoom")
+        new_fieldsets = []
+        for label, options in fieldsets:
+            fields = options.get("fields", ())
+            new_fields = []
+            for f in fields:
+                if isinstance(f, (list, tuple)):
+                    filtered_row = [x for x in f if x not in excluded_fields]
+                    if filtered_row:
+                        new_fields.append(
+                            tuple(filtered_row)
+                            if isinstance(f, tuple)
+                            else filtered_row
+                        )
+                else:
+                    if f not in excluded_fields:
+                        new_fields.append(f)
+            if new_fields:
+                new_options = dict(options)
+                new_options["fields"] = tuple(new_fields)
+                new_fieldsets.append((label, new_options))
+        return tuple(new_fieldsets)
+
+    def get_inlines(self, request, obj=None):
+        if obj is None:
+            return []
+        if obj.base_layer_type == LayerType.RASTER:
+            return [BaseLayerTileInline, PMTilesInline]
+        else:
+            return [PMTilesInline]
+
+    class Media:
+        js = ("mapbox_baselayer/js/mapbaselayer_admin.js",)
 
     def get_queryset(self, request):
-        return super().get_queryset(request).filter(enabled=True)
+        return super().get_queryset(request)
 
     def has_add_permission(self, request):
-        return False
+        return True
 
     def has_delete_permission(self, request, obj=None):
-        return False
+        return True
 
     def has_change_permission(self, request, obj=None):
-        return False
-
-
-@admin.register(BaseLayerRaster)
-class BaseLayerRasterAdmin(RasterAdminMixin, admin.ModelAdmin):
-    list_display = ("name", "order", "min_zoom", "max_zoom", "enabled")
-
-
-@admin.register(BaseLayerStyle)
-class BaseLayerStyleAdmin(StyleAdminMixin, admin.ModelAdmin):
-    list_display = ("name", "order", "min_zoom", "max_zoom", "enabled")
-
-
-@admin.register(OverlayRaster)
-class OverlayRasterAdmin(RasterAdminMixin, admin.ModelAdmin):
-    list_display = ("name", "order", "min_zoom", "max_zoom", "enabled")
-
-
-@admin.register(OverlayStyle)
-class OverlayStyleAdmin(StyleAdminMixin, admin.ModelAdmin):
-    list_display = ("name", "order", "min_zoom", "max_zoom", "enabled")
+        return True

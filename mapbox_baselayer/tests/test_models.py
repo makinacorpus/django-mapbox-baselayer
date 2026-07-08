@@ -31,6 +31,16 @@ class MapBaseLayerTEstCase(TestCase):
             glyphs="http://mystyle",
         )
 
+    def test_default_tile_size_all_types(self):
+        layer1 = MapBaseLayer.objects.create(
+            name="New Raster Layer", base_layer_type="raster"
+        )
+        self.assertEqual(layer1.tile_size, 256)
+        layer2 = MapBaseLayer.objects.create(
+            name="New Style Layer", base_layer_type="mapbox"
+        )
+        self.assertEqual(layer2.tile_size, 256)
+
     def test_str(self):
         self.assertEqual(self.mapbox_base_layer.name, str(self.mapbox_base_layer))
 
@@ -120,17 +130,6 @@ class RealUrlTestCase(TestCase):
         self.assertEqual(
             layer.real_url,
             "https://api.mapbox.com/styles/v1/user/style",
-        )
-
-    def test_real_url_vector(self):
-        layer = MapBaseLayer.objects.create(
-            name="Vector",
-            base_layer_type="vector",
-            style_url="mapbox://styles/user/vstyle",
-        )
-        self.assertEqual(
-            layer.real_url,
-            "https://api.mapbox.com/styles/v1/user/vstyle",
         )
 
 
