@@ -28,6 +28,14 @@ logger = logging.getLogger(__name__)
 class Command(BaseCommand):
     help = "Create pmtiles of the selected baselayer with parallel downloads"
 
+    def format_request_error(self, exception):
+        response = getattr(exception, "response", None)
+        if response is None:
+            return str(exception)
+
+        message = response.reason or str(exception)
+        return f"HTTP {response.status_code}: {message}"
+
     def add_arguments(self, parser):
         parser.add_argument("id", type=int, help="Baselayer id in MapBaselayer model")
         parser.add_argument(
@@ -98,12 +106,20 @@ class Command(BaseCommand):
                 return response
             except requests.exceptions.RequestException as e:
                 last_exc = e
+                error_details = self.format_request_error(e)
                 logger.warning(
-                    "Failed attempt %d/%d for %s: %s", attempt + 1, RETRY_COUNT, url, e
+                    "Failed attempt %d/%d for %s: %s",
+                    attempt + 1,
+                    RETRY_COUNT,
+                    url,
+                    error_details,
                 )
                 if attempt < RETRY_COUNT - 1:
                     time.sleep(2 ** (attempt + 1))
-        msg = f"Failed after {RETRY_COUNT} attempt : {url}"
+        msg = (
+            f"Failed after {RETRY_COUNT} attempts for {url}: "
+            f"{self.format_request_error(last_exc)}"
+        )
         raise requests.exceptions.RetryError(msg) from last_exc
 
     def get_tile_type(self, baselayer):

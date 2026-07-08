@@ -18,7 +18,34 @@ from mapbox_baselayer.models import (
 class PMTilesInline(admin.StackedInline):
     model = PMTile
     extra = 0
-    readonly_fields = ("pmtiles_file", "pmtiles_style", "min_zoom", "max_zoom")
+
+    def get_size(self, obj):
+        if obj.pmtiles_file:
+            return f"{obj.pmtiles_file.size / (1024 * 1024):.2f} MB"
+        return "N/A"
+
+    readonly_fields = (
+        "pmtiles_file",
+        "pmtiles_style",
+        "min_zoom",
+        "max_zoom",
+        "get_size",
+    )
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "name",
+                    "notes",
+                    ("min_zoom", "max_zoom"),
+                    ("pmtiles_file", "get_size"),
+                    "pmtiles_style",
+                    "bbox",
+                )
+            },
+        ),
+    )
 
     formfield_overrides = {
         GeometryField: {
@@ -65,6 +92,7 @@ class StyleForm(forms.ModelForm):
 
 class RasterAdminMixin:
     form = RasterForm
+
     inlines = [BaseLayerTileInline, PMTilesInline]
     readonly_fields = ("slug",)
 
