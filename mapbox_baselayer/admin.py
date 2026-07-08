@@ -4,13 +4,10 @@ from django.contrib.gis.db.models import GeometryField
 from django.contrib.gis.forms import OSMWidget
 from django.utils.translation import gettext_lazy as _
 
+from mapbox_baselayer.choices import LayerType
 from mapbox_baselayer.models import (
-    BaseLayerRaster,
-    BaseLayerStyle,
     BaseLayerTile,
     MapBaseLayer,
-    OverlayRaster,
-    OverlayStyle,
     PMTile,
 )
 
@@ -68,31 +65,64 @@ class BaseLayerTileInline(admin.TabularInline):
     model = BaseLayerTile
     extra = 0
     min_num = 1
+    validate_min = True
 
 
-class RasterForm(forms.ModelForm):
+class MapBaseLayerForm(forms.ModelForm):
     class Meta:
         model = MapBaseLayer
-        exclude = ("style_url", "is_overlay", "base_layer_type")
+        fields = [
+            "name",
+            "is_overlay",
+            "order",
+            "base_layer_type",
+            "style_url",
+            "sprite",
+            "glyphs",
+            "min_zoom",
+            "max_zoom",
+            "tile_size",
+            "attribution",
+            "enabled",
+        ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["tile_size"].initial = 256
+        if self.instance and self.instance.pk:
+            self.fields["base_layer_type"].disabled = True
+        else:
+            # When creating, only name and base_layer_type are shown
+            # but we should ensure other fields don't cause validation issues
+            # if they are not in the form
+            pass
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        layer_type = cleaned_data.get("base_layer_type")
+        style_url = cleaned_data.get("style_url")
+
+        if layer_type == LayerType.STYLE_URL and not style_url:
+            self.add_error(
+                "style_url", _("Style URL is required for Mapbox Style layers.")
+            )
+
+        return cleaned_data
 
 
-class StyleForm(forms.ModelForm):
-    class Meta:
-        model = MapBaseLayer
-        exclude = ("is_overlay", "base_layer_type")
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["style_url"].required = True
-
-
-class RasterAdminMixin:
-    form = RasterForm
-
+@admin.register(MapBaseLayer)
+class MapBaseLayerAdmin(admin.ModelAdmin):
+    form = MapBaseLayerForm
+    list_display = (
+        "name",
+        "is_overlay",
+        "base_layer_type",
+        "min_zoom",
+        "max_zoom",
+        "enabled",
+    )
+    list_filter = ("is_overlay", "base_layer_type", "enabled")
+    search_fields = ("name", "slug")
     inlines = [BaseLayerTileInline, PMTilesInline]
     readonly_fields = ("slug",)
 
@@ -102,81 +132,55 @@ class RasterAdminMixin:
             {
                 "fields": (
                     ("name", "slug"),
+                    ("is_overlay", "base_layer_type"),
                     ("enabled", "order"),
                     "attribution",
                 )
             },
         ),
         (
-            _("Advanced options"),
+            _("Style options"),
             {
-                "fields": (("min_zoom", "max_zoom"), "sprite", "glyphs", "tile_size"),
-                "classes": ("collapse",),
-            },
-        ),
-    )
-
-
-class StyleAdminMixin:
-    form = StyleForm
-    inlines = [
-        PMTilesInline,
-    ]
-    readonly_fields = ("slug",)
-    fieldsets = (
-        (
-            None,
-            {
-                "fields": (
-                    ("name", "slug"),
-                    "style_url",
-                    ("enabled", "order"),
-                    "attribution",
-                )
+                "fields": ("style_url", "tile_size"),
             },
         ),
         (
             _("Advanced options"),
             {
-                "fields": (("min_zoom", "max_zoom"), "sprite", "glyphs", "tile_size"),
+                "fields": (("min_zoom", "max_zoom"), "sprite", "glyphs"),
                 "classes": ("collapse",),
             },
         ),
     )
 
+    def get_formsets_with_inlines(self, request, obj=None):
+        for formset, inline in super().get_formsets_with_inlines(request, obj):
+            if isinstance(inline, BaseLayerTileInline):
+                layer_type = None
+                if obj:
+                    layer_type = obj.base_layer_type
+                elif request.method == "POST":
+                    layer_type = request.POST.get("base_layer_type")
 
-@admin.register(MapBaseLayer)
-class LayerAdmin(admin.ModelAdmin):
-    list_display = ("name", "is_overlay", "min_zoom", "max_zoom")
+                if layer_type == LayerType.RASTER:
+                    formset.min_num = 1
+                    formset.validate_min = True
+                else:
+                    formset.min_num = 0
+                    formset.validate_min = False
+            yield formset, inline
+
+    class Media:
+        js = ("map-utils/js/mapbaselayer_admin.js",)
 
     def get_queryset(self, request):
-        return super().get_queryset(request).filter(enabled=True)
+        return super().get_queryset(request)
 
     def has_add_permission(self, request):
-        return False
+        return True
 
     def has_delete_permission(self, request, obj=None):
-        return False
+        return True
 
     def has_change_permission(self, request, obj=None):
-        return False
-
-
-@admin.register(BaseLayerRaster)
-class BaseLayerRasterAdmin(RasterAdminMixin, admin.ModelAdmin):
-    list_display = ("name", "order", "min_zoom", "max_zoom", "enabled")
-
-
-@admin.register(BaseLayerStyle)
-class BaseLayerStyleAdmin(StyleAdminMixin, admin.ModelAdmin):
-    list_display = ("name", "order", "min_zoom", "max_zoom", "enabled")
-
-
-@admin.register(OverlayRaster)
-class OverlayRasterAdmin(RasterAdminMixin, admin.ModelAdmin):
-    list_display = ("name", "order", "min_zoom", "max_zoom", "enabled")
-
-
-@admin.register(OverlayStyle)
-class OverlayStyleAdmin(StyleAdminMixin, admin.ModelAdmin):
-    list_display = ("name", "order", "min_zoom", "max_zoom", "enabled")
+        return True

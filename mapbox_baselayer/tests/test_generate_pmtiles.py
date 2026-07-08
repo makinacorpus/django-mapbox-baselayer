@@ -223,5 +223,5 @@ class GeneratePMTilesCommandTestCase(TestCase):
         from mapbox_baselayer.management.commands.generate_pmtiles import Command
 
         cmd = Command()
-        layer = MapBaseLayer(base_layer_type="vector")
+        layer = MapBaseLayer(base_layer_type="unknown")
         self.assertIsNone(cmd.get_tile_type(layer))
