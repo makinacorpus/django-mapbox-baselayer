@@ -1,7 +1,15 @@
 CHANGELOG
 =========
 
-1.4.          (2026-07-07)
+1.4.1+dev     (XXXX-XX-XX)
+--------------------------
+
+**Bugfixes**
+
+* Default zoom levels for IGN layers
+
+
+1.4.1         (2026-07-07)
 --------------------------
 
 **Improvements**
