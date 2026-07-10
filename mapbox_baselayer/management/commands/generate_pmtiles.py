@@ -55,7 +55,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--bbox",
             action="store",
-            help="Use bounding box instead of full extent. Like LNG_MIN,LAT_MIN,LNG_MAX,LAT_MAX in WGS84.",
+            help="Override DEFAULT_BBOX. Format: LNG_MIN,LAT_MIN,LNG_MAX,LAT_MAX (WGS84).",
             type=str,
             default=None,
         )
