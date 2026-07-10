@@ -57,6 +57,7 @@ def get_map_base_layers(request):
 def get_pmtiles(request):
     return [
         {
+            "id": pmtiles.id,
             "pmtiles_url": request.build_absolute_uri(pmtiles.pmtiles_file.url),
             "json_style_url": request.build_absolute_uri(pmtiles.pmtiles_style.url),
             "name": pmtiles.name,
