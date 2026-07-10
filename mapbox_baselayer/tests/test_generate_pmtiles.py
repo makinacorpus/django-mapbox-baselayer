@@ -3,7 +3,8 @@ import shutil
 from tempfile import TemporaryDirectory
 from unittest.mock import Mock, patch
 
-from django.core.management import call_command
+from django.contrib.gis.geos import Polygon
+from django.core.management import CommandError, call_command
 from django.test import TestCase, override_settings
 
 from mapbox_baselayer.models import MapBaseLayer, PMTile
@@ -218,6 +219,29 @@ class GeneratePMTilesCommandTestCase(TestCase):
             self.assertEqual(pmtile.max_zoom, 4)
         finally:
             default_config["DEFAULT_BBOX"] = original_bbox
+
+    def test_generate_pmtiles_bbox_overrides_default(self):
+        call_command(
+            "generate_pmtiles",
+            self.layer.id,
+            minzoom=0,
+            maxzoom=0,
+            bbox="-10,-10,10,10",
+        )
+        pmtile = PMTile.objects.get(layer=self.layer)
+        expected_bbox = Polygon.from_bbox((-10.0, -10.0, 10.0, 10.0))
+        expected_bbox.srid = 4326
+        self.assertEqual(pmtile.bbox.extent, expected_bbox.extent)
+
+    def test_generate_pmtiles_invalid_bbox_raises_command_error(self):
+        with self.assertRaises(CommandError):
+            call_command(
+                "generate_pmtiles",
+                self.layer.id,
+                minzoom=0,
+                maxzoom=0,
+                bbox="not,valid",
+            )
 
     def test_get_tile_type_returns_none(self):
         from mapbox_baselayer.management.commands.generate_pmtiles import Command
