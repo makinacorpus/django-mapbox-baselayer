@@ -1,6 +1,15 @@
 CHANGELOG
 =========
 
+1.5.1         (2026-07-10)
+--------------------------
+
+**Improvements**
+
+* Add bbox option to PMtiles generator
+* Add id in layer API responses
+
+
 1.5.0         (2026-07-08)
 --------------------------
 

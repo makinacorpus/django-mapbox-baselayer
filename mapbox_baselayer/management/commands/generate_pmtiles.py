@@ -8,6 +8,7 @@ import requests
 from django.contrib.gis.geos import Polygon
 from django.core.files import File
 from django.core.files.temp import NamedTemporaryFile
+from django.core.management import CommandError
 from django.core.management.base import BaseCommand
 from django.utils.translation import gettext_lazy as _
 from pmtiles.tile import Compression, TileType, zxy_to_tileid
@@ -51,6 +52,36 @@ class Command(BaseCommand):
             type=str,
             help="Name of the PMTile instance",
         )
+        parser.add_argument(
+            "--bbox",
+            action="store",
+            help="Override DEFAULT_BBOX. Format: LNG_MIN,LAT_MIN,LNG_MAX,LAT_MAX (WGS84).",
+            type=str,
+            default=None,
+        )
+
+    def get_extent(self, input_bbox):
+        try:
+            if input_bbox is not None:
+                parts = [p.strip() for p in input_bbox.split(",")]
+            else:
+                parts = list(default_config["DEFAULT_BBOX"])
+
+            if len(parts) != 4:
+                msg = "bbox must be a comma-separated list of 4 numbers"
+                raise ValueError(msg)
+
+            west, south, east, north = [float(x) for x in parts]
+            if west >= east or south >= north:
+                msg = "bbox coordinates must satisfy west < east and south < north"
+                raise ValueError(msg)
+
+            bbox = Polygon.from_bbox((west, south, east, north))
+            bbox.srid = 4326
+            return bbox
+        except (TypeError, ValueError, KeyError) as exc:
+            msg = _("Invalid bbox: %(exc)s") % {"exc": exc}
+            raise CommandError(msg)
 
     def get_baselayer(self, pk):
         try:
@@ -150,8 +181,7 @@ class Command(BaseCommand):
         zooms = self.get_zooms(input_minzoom, input_maxzoom, baselayer)
 
         # 2. Projection spatiale de l'emprise
-        bbox = Polygon.from_bbox(default_config["DEFAULT_BBOX"])
-        bbox.srid = 4326
+        bbox = self.get_extent(options["bbox"])
         west, south, east, north = bbox.extent
 
         json_data = self.get_json(baselayer)
