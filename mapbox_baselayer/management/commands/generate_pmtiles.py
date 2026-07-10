@@ -62,22 +62,23 @@ class Command(BaseCommand):
 
     def get_extent(self, input_bbox):
         try:
-            if input_bbox:
-                input_bbox = input_bbox.split(",")
-
+            if input_bbox is not None:
+                parts = [p.strip() for p in input_bbox.split(",")]
             else:
-                input_bbox = default_config["DEFAULT_BBOX"]
+                parts = list(default_config["DEFAULT_BBOX"])
 
-            if len(input_bbox) != 4:
-                msg = "bbox must be a comma-separated list of 4 numbers"
-                raise Exception(msg)
-            input_bbox = [float(x) for x in input_bbox]
-            bbox = Polygon.from_bbox(input_bbox)
+            if len(parts) != 4:
+                raise ValueError("bbox must be a comma-separated list of 4 numbers")
+
+            west, south, east, north = [float(x) for x in parts]
+            if west >= east or south >= north:
+                raise ValueError("bbox coordinates must satisfy west < east and south < north")
+
+            bbox = Polygon.from_bbox((west, south, east, north))
             bbox.srid = 4326
             return bbox
-        except Exception as exc:
-            msg = f"Invalid bbox: {exc}"
-            raise CommandError(msg)
+        except (TypeError, ValueError, KeyError) as exc:
+            raise CommandError(f"Invalid bbox: {exc}") from exc
 
     def get_baselayer(self, pk):
         try:
