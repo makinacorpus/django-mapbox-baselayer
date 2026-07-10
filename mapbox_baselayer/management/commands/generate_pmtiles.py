@@ -68,17 +68,20 @@ class Command(BaseCommand):
                 parts = list(default_config["DEFAULT_BBOX"])
 
             if len(parts) != 4:
-                raise ValueError("bbox must be a comma-separated list of 4 numbers")
+                msg = "bbox must be a comma-separated list of 4 numbers"
+                raise ValueError(msg)
 
             west, south, east, north = [float(x) for x in parts]
             if west >= east or south >= north:
-                raise ValueError("bbox coordinates must satisfy west < east and south < north")
+                msg = "bbox coordinates must satisfy west < east and south < north"
+                raise ValueError(msg)
 
             bbox = Polygon.from_bbox((west, south, east, north))
             bbox.srid = 4326
             return bbox
         except (TypeError, ValueError, KeyError) as exc:
-            raise CommandError(f"Invalid bbox: {exc}") from exc
+            msg = _("Invalid bbox: %(exc)s") % {"exc": exc}
+            raise CommandError(msg)
 
     def get_baselayer(self, pk):
         try:
