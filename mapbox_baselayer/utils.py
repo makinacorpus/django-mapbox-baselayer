@@ -37,18 +37,30 @@ def get_map_base_layers(request):
 
     data = {
         "base_layers": [
-            {"name": bl.name, "slug": bl.slug, "url": bl.url} for bl in base_layers
+            {
+                "name": bl.name,
+                "slug": bl.slug,
+                "url": request.build_absolute_uri(bl.url),
+            }
+            for bl in base_layers
         ]
         if base_layers
         else [
             {
                 "name": "OSM",
                 "slug": "osm",
-                "url": reverse("mapbox_baselayer:default-osm-tilejson"),
+                "url": request.build_absolute_uri(
+                    reverse("mapbox_baselayer:default-osm-tilejson")
+                ),
             }
         ],
         "overlay_layers": [
-            {"name": ol.name, "slug": ol.slug, "url": ol.url} for ol in overlay_layers
+            {
+                "name": ol.name,
+                "slug": ol.slug,
+                "url": request.build_absolute_uri(ol.url),
+            }
+            for ol in overlay_layers
         ],
     }
     return data

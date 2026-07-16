@@ -27,7 +27,8 @@ class GetMapBaseLayersTestCase(TestCase):
         self.assertEqual(osm_entry["name"], "OSM")
         self.assertEqual(osm_entry["slug"], "osm")
         self.assertEqual(
-            osm_entry["url"], reverse("mapbox_baselayer:default-osm-tilejson")
+            osm_entry["url"],
+            f"http://testserver{reverse('mapbox_baselayer:default-osm-tilejson')}",
         )
 
     def test_only_base_layers(self):
@@ -134,7 +135,9 @@ class GetMapBaseLayersTestCase(TestCase):
         # Verify overlay layer
         self.assertEqual(data["overlay_layers"][0]["name"], "Overlay layer")
         self.assertEqual(data["overlay_layers"][0]["slug"], overlay_layer.slug)
-        self.assertEqual(data["overlay_layers"][0]["url"], overlay_layer.url)
+        self.assertEqual(
+            data["overlay_layers"][0]["url"], f"http://testserver{overlay_layer.url}"
+        )
 
     def test_disabled_layers_are_excluded(self):
         """Test that disabled layers are not included in the results."""
@@ -188,5 +191,6 @@ class GetMapBaseLayersTestCase(TestCase):
         self.assertEqual(osm_entry["name"], "OSM")
         self.assertEqual(osm_entry["slug"], "osm")
         self.assertEqual(
-            osm_entry["url"], reverse("mapbox_baselayer:default-osm-tilejson")
+            osm_entry["url"],
+            f"http://testserver{reverse('mapbox_baselayer:default-osm-tilejson')}",
         )
