@@ -17,4 +17,9 @@ urlpatterns = [
     ),
     path("mapbox-baselayers/", views.MapLayerListView.as_view(), name="baselayer-list"),
     path("pmtiles/", views.PMTilesView.as_view(), name="pmtiles-list"),
+    path(
+        "pmtiles/<int:pk>/tiles/<int:z>/<int:x>/<int:y>/",
+        views.PMTileTileView.as_view(),
+        name="pmtiles-tile",
+    ),
 ]

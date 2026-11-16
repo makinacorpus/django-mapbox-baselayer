@@ -1,3 +1,5 @@
+from urllib.parse import unquote
+
 from django.urls import reverse
 
 from mapbox_baselayer.models import MapBaseLayer, PMTile
@@ -71,6 +73,7 @@ def get_pmtiles(request):
         {
             "id": pmtiles.id,
             "pmtiles_url": request.build_absolute_uri(pmtiles.pmtiles_file.url),
+            "tiles_url": unquote(request.build_absolute_uri(pmtiles.tiles_url)),
             "json_style_url": request.build_absolute_uri(pmtiles.pmtiles_style.url),
             "name": pmtiles.name,
             "content-length": pmtiles.pmtiles_file.size,
