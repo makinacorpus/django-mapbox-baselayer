@@ -341,6 +341,14 @@ class PMTile(models.Model):
     def __str__(self):
         return self.name
 
+    @cached_property
+    def tiles_url(self):
+        url = reverse(
+            "mapbox_baselayer:pmtiles-tile",
+            kwargs={"pk": self.pk, "z": 0, "x": 0, "y": 0},
+        )
+        return url.replace("/tiles/0/0/0/", "/tiles/{z}/{x}/{y}/")
+
     class Meta:
         ordering = ("name",)
 
