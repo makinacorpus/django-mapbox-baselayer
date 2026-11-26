@@ -1,6 +1,16 @@
 CHANGELOG
 =========
 
+1.5.2+dev     (XXXX-XX-XX)
+--------------------------
+
+**Improvements**
+
+* Handling bad response in tile download
+* Test app now use maplibre-gl@^6 instead of maplibre-gl@latest to avoid breaking changes in the future.
+* Fix referrer policy to avoid OSM tiles 403 error when using maplibre-gl@^6
+
+
 1.5.2         (2026-07-16)
 --------------------------
 
