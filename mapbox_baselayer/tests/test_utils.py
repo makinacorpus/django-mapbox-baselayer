@@ -130,7 +130,9 @@ class GetMapBaseLayersTestCase(TestCase):
         # Verify base layer
         self.assertEqual(data["base_layers"][0]["name"], "Base layer")
         self.assertEqual(data["base_layers"][0]["slug"], base_layer.slug)
-        self.assertEqual(data["base_layers"][0]["url"], base_layer.url)
+        self.assertEqual(
+            data["base_layers"][0]["url"], f"http://testserver{base_layer.url}"
+        )
 
         # Verify overlay layer
         self.assertEqual(data["overlay_layers"][0]["name"], "Overlay layer")
