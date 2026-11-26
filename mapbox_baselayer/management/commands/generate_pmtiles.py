@@ -120,6 +120,13 @@ class Command(BaseCommand):
         source = next(iter(data["sources"].values()))
         return source["tiles"][0]
 
+    def get_request_headers(self):
+        return {
+            "User-Agent": default_config.get("USER_AGENT"),
+            "Referer": default_config.get("REFERRER"),
+            "Cache-Control": "max-age=0",
+        }
+
     def get_or_retry(self, url):
         last_exc = None
         for attempt in range(RETRY_COUNT):
@@ -127,11 +134,7 @@ class Command(BaseCommand):
                 response = requests.get(
                     url,
                     timeout=30,
-                    headers={
-                        "User-Agent": default_config.get("USER_AGENT"),
-                        "Referer": default_config.get("REFERRER"),
-                        "Cache-Control": "max-age=0",
-                    },
+                    headers=self.get_request_headers(),
                 )
                 response.raise_for_status()
                 return response
@@ -161,12 +164,19 @@ class Command(BaseCommand):
         return None
 
     def download_tile_worker(self, tile_id, url):
-        """Worker exécuté en parallèle pour télécharger le contenu brut d'une tuile"""
+        """Worker executed in parallel to download the raw content of a tile."""
         try:
-            response = self.get_or_retry(url)
+            response = requests.get(
+                url,
+                timeout=30,
+                headers=self.get_request_headers(),
+            )
+            response.raise_for_status()
             return tile_id, response.content
-        except Exception as e:
-            logger.error("Impossible de télécharger la tuile %s : %s", url, e)
+        except requests.exceptions.RequestException as e:
+            response = getattr(e, "response", None)
+            error = f"HTTP {response.status_code}" if response is not None else str(e)
+            logger.warning("%s (%s)", url, error)
             return tile_id, None
 
     def handle(self, *args, **options):
@@ -176,11 +186,11 @@ class Command(BaseCommand):
 
         start_time = time.perf_counter()
 
-        # 1. Initialisation et configuration des zooms
+        # 1. Initialize and configure zoom levels
         baselayer = self.get_baselayer(baselayer_id)
         zooms = self.get_zooms(input_minzoom, input_maxzoom, baselayer)
 
-        # 2. Projection spatiale de l'emprise
+        # 2. Spatial extent projection
         bbox = self.get_extent(options["bbox"])
         west, south, east, north = bbox.extent
 
@@ -188,7 +198,7 @@ class Command(BaseCommand):
         tile_url = self.get_tile_url(json_data)
         filename_tiles = f"{baselayer.slug}.pmtiles"
 
-        # 3. Collecte et ordonnancement de toutes les tuiles
+        # 3. Collect and count all tiles
         self.stdout.write("Calcul du nombre total de tuiles...")
         total_tiles = 0
         for zoom in zooms:
@@ -210,20 +220,19 @@ class Command(BaseCommand):
             self.stdout.write("Aucune tuile à générer.")
             return
 
-        # 4. Téléchargement parallèle & Écriture ordonnée
+        # 4. Parallel download & ordered writing
         self.stdout.write("Début de la génération parallélisée...")
 
-        # Structure temporaire pour stocker les tuiles reçues dans le désordre
+        # Temporary cache to store tiles received out of order
         downloaded_cache = {}
 
         def tile_generator():
             for zoom in zooms:
-                # On utilise un générateur pour ne pas tout charger en mémoire
-                # PMTiles a besoin des tuiles triées par tile_id.
-                # mercantile.tiles génère les tuiles par zoom, puis par y, puis par x.
-                # Cependant, zxy_to_tileid suit généralement cet ordre pour un même zoom,
-                # mais nous devons être sûrs pour l'ensemble des zooms.
-                # En pratique, l'ID de tuile augmente avec le zoom.
+                # Use a generator to avoid loading everything into memory.
+                # PMTiles requires tiles to be sorted by tile_id.
+                # mercantile.tiles yields tiles by zoom, then y, then x.
+                # zxy_to_tileid generally follows this order within a zoom level,
+                # and in practice tile_id increases with zoom.
                 for t in mercantile.tiles(west, south, east, north, [zoom]):
                     t_id = zxy_to_tileid(t.z, t.x, t.y)
                     t_url = tile_url.format(z=t.z, x=t.x, y=t.y)
@@ -241,14 +250,13 @@ class Command(BaseCommand):
                 with tqdm(
                     total=total_tiles, desc="Progression", unit="tuile", ncols=100
                 ) as pbar:
-                    # Index de la prochaine tuile attendue pour respecter l'ordre strict de PMTiles
+                    # Index of the next expected tile to preserve strict PMTiles ordering
                     next_tile_index = 0
-                    # On soumet les tâches par paquets pour limiter la consommation mémoire
+                    # Submit tasks in batches to limit memory usage
                     chunk_size = 100
                     tile_iterator = tile_generator()
 
-                    # Pour suivre l'ordre, on a besoin de connaître l'ID attendu.
-                    # Comme on a supprimé all_tiles_to_process, on doit garder trace des IDs envoyés.
+                    # Keep track of submitted tile IDs to preserve writing order
                     ordered_ids = []
 
                     def enqueue_tiles(it, count):
@@ -277,39 +285,39 @@ class Command(BaseCommand):
                             t_id, tile_content = future.result()
                             future_to_tile.pop(future)
 
-                            if tile_content is not None:
-                                # Stockage temporaire en mémoire RAM
-                                downloaded_cache[t_id] = tile_content
+                            # Store temporarily in RAM (None if tile is unavailable)
+                            downloaded_cache[t_id] = tile_content
 
-                        # Écriture immédiate de toutes les tuiles prêtes qui respectent l'ordre croissant
+                        # Immediately write all ready tiles in ascending order
                         while next_tile_index < total_tiles:
-                            # next_tile_index est l'index global parmi total_tiles
-                            # ordered_ids contient les IDs dans l'ordre de tile_generator()
+                            # next_tile_index is the global index within total_tiles;
+                            # ordered_ids holds tile IDs in the order yielded by tile_generator()
                             if next_tile_index < len(ordered_ids):
                                 expected_id = ordered_ids[next_tile_index]
 
                                 if expected_id in downloaded_cache:
                                     content = downloaded_cache.pop(expected_id)
-                                    writer.write_tile(expected_id, content)
+                                    if content is not None:
+                                        writer.write_tile(expected_id, content)
                                     next_tile_index += 1
                                     pbar.update(1)
                                 else:
                                     break
                             else:
-                                # On n'a pas encore généré l'ID suivant dans ordered_ids
+                                # Next ID has not been generated in ordered_ids yet
                                 break
 
-                        # Re-remplir la file d'attente
+                        # Refill the download queue
                         new_tiles_count = chunk_size - len(future_to_tile)
                         if new_tiles_count > 0:
                             future_to_tile.update(
                                 enqueue_tiles(tile_iterator, new_tiles_count)
                             )
 
-                    # Nettoyage final de la mémoire pour ordered_ids
+                    # Release memory used by ordered_ids
                     ordered_ids.clear()
 
-            # 5. Finalisation du fichier PMTiles
+            # 5. Finalize the PMTiles archive
             self.stdout.write("Finalisation et indexation du conteneur PMTiles...")
             writer.finalize(
                 {
@@ -328,13 +336,13 @@ class Command(BaseCommand):
                 },
             )
 
-        # 6. Génération du fichier style JSON (sans la clé sources)
+        # 6. Generate style JSON file (without the sources key)
         json_data.pop("sources", None)
         filename_style = f"{baselayer.slug}.json"
         with open(temp_style.name, "w") as style_file:
             json.dump(json_data, style_file)
 
-        # 7. Création de l'instance PMTile
+        # 7. Create the PMTile model instance
         pmtile_name = options["name"] or f"{baselayer.name}"
         self.stdout.write(f"Enregistrement de l'instance PMTile '{pmtile_name}'...")
 

@@ -27,16 +27,16 @@ class PMTileDeleteTestCase(TestCase):
         self.pmtiles_style_path = self.pmtile.pmtiles_style.path
 
     def test_files_deleted_on_instance_deletion(self):
-        # Vérifie que les fichiers existent avant la suppression
+        # Verify that files exist before deletion
         self.assertTrue(os.path.exists(self.pmtiles_file_path))
         self.assertTrue(os.path.exists(self.pmtiles_style_path))
 
-        # Supprime l'instance
+        # Delete the instance
         self.pmtile.delete()
 
-        # Vérifie si les fichiers sont supprimés
-        # Si le comportement par défaut de Django (ne pas supprimer) est en place,
-        # ce test échouera ici si on s'attend à ce qu'ils soient supprimés.
+        # Verify that files are deleted
+        # If Django's default behavior (not deleting files) is in place,
+        # this test will fail here when expecting them to be removed.
         self.assertFalse(
             os.path.exists(self.pmtiles_file_path),
             f"Le fichier PMTiles {self.pmtiles_file_path} n'a pas été supprimé",

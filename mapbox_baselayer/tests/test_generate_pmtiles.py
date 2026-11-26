@@ -36,10 +36,10 @@ class GeneratePMTilesCommandTestCase(TestCase):
         self.layer.tiles.create(url="https://tile.openstreetmap.org/{z}/{x}/{y}.png")
 
     def test_generate_pmtiles_creates_pmtile_instance(self):
-        # Appel de la commande (on utilise des zooms bas pour aller vite)
+        # Call the command (use low zoom levels for speed)
         call_command("generate_pmtiles", self.layer.id, minzoom=0, maxzoom=0)
 
-        # Vérification qu'une instance PMTile a été créée
+        # Verify that a PMTile instance was created
         pmtile_exists = PMTile.objects.filter(layer=self.layer).exists()
         self.assertTrue(pmtile_exists, "L'instance PMTile devrait avoir été créée")
 
@@ -51,26 +51,26 @@ class GeneratePMTilesCommandTestCase(TestCase):
         self.assertTrue(pmtile.name.startswith("Test Layer"))
 
     def test_generate_pmtiles_creates_new_instance_each_time(self):
-        # On s'assure que les dossiers existent ou sont propres
+        # Ensure folders are clean
         if os.path.exists("var/tiles/pmtiles"):
             shutil.rmtree("var/tiles/pmtiles")
 
-        # Premier appel
+        # First call
         call_command("generate_pmtiles", self.layer.id, minzoom=0, maxzoom=0)
         self.assertEqual(PMTile.objects.filter(layer=self.layer).count(), 1)
 
-        # Deuxième appel
+        # Second call
         call_command("generate_pmtiles", self.layer.id, minzoom=0, maxzoom=0)
         self.assertEqual(PMTile.objects.filter(layer=self.layer).count(), 2)
 
-        # Nettoyage
+        # Cleanup
         if os.path.exists("var/tiles/pmtiles"):
             shutil.rmtree("var/tiles/pmtiles")
         if os.path.exists("var/tmp"):
             shutil.rmtree("var/tmp")
 
     def test_generate_pmtiles_creates_pmtile_instance_with_custom_name(self):
-        # Appel de la commande avec un nom spécifique
+        # Call the command with a specific name
         custom_name = "Custom Region"
         call_command(
             "generate_pmtiles", self.layer.id, minzoom=0, maxzoom=0, name=custom_name
@@ -153,44 +153,82 @@ class GeneratePMTilesCommandTestCase(TestCase):
         call_command("generate_pmtiles", self.layer.id, minzoom=2, maxzoom=1)
         self.assertFalse(PMTile.objects.filter(layer=self.layer).exists())
 
+    @patch("mapbox_baselayer.management.commands.generate_pmtiles.Writer")
     @patch("mapbox_baselayer.management.commands.generate_pmtiles.time.sleep")
-    def test_generate_pmtiles_download_failure(self, mock_sleep):
+    def test_generate_pmtiles_download_failure(self, mock_sleep, mock_writer_cls):
         import requests
 
         mock_response_ok = Mock()
         mock_response_ok.raise_for_status.return_value = None
         mock_response_ok.content = b"dummy tile bytes"
 
+        mock_response_404 = Mock(status_code=404, reason="Not Found")
+        mock_response_404.raise_for_status.side_effect = requests.exceptions.HTTPError(
+            response=mock_response_404
+        )
+
         self.mock_get.side_effect = [
             mock_response_ok,
-            requests.exceptions.RequestException("Download error"),
-            requests.exceptions.RequestException("Download error"),
-            requests.exceptions.RequestException("Download error"),
-            requests.exceptions.RequestException("Download error"),
+            mock_response_404,
+            mock_response_ok,
         ]
-        call_command("generate_pmtiles", self.layer.id, minzoom=0, maxzoom=1)
+        call_command("generate_pmtiles", self.layer.id, minzoom=0, maxzoom=2)
         self.assertTrue(PMTile.objects.filter(layer=self.layer).exists())
+        self.assertEqual(self.mock_get.call_count, 3)
+        mock_sleep.assert_not_called()
+        self.assertEqual(mock_writer_cls.return_value.write_tile.call_count, 2)
 
+    @patch("mapbox_baselayer.management.commands.generate_pmtiles.time.sleep")
     @patch("mapbox_baselayer.management.commands.generate_pmtiles.logger")
-    def test_download_tile_worker_logs_http_status_and_message(self, mock_logger):
+    def test_download_tile_worker_logs_url_and_http_status_without_retry(
+        self, mock_logger, mock_sleep
+    ):
         import requests
 
         from mapbox_baselayer.management.commands.generate_pmtiles import Command
 
         command = Command()
-        retry_error = requests.exceptions.RetryError(
-            "Failed after 3 attempts for http://mock-tile: HTTP 503: Service Unavailable"
+        mock_response = Mock(status_code=503, reason="Service Unavailable")
+        mock_response.raise_for_status.side_effect = requests.exceptions.HTTPError(
+            response=mock_response
         )
+        self.mock_get.return_value = mock_response
 
-        with patch.object(command, "get_or_retry", side_effect=retry_error):
-            tile_id, content = command.download_tile_worker(1, "http://mock-tile")
+        tile_id, content = command.download_tile_worker(1, "http://mock-tile")
 
         self.assertEqual(tile_id, 1)
         self.assertIsNone(content)
-        mock_logger.error.assert_called_once()
-        self.assertIn(
-            "HTTP 503: Service Unavailable", str(mock_logger.error.call_args[0][2])
+        self.mock_get.assert_called_once()
+        mock_sleep.assert_not_called()
+        mock_logger.warning.assert_called_once_with(
+            "%s (%s)", "http://mock-tile", "HTTP 503"
         )
+        mock_logger.error.assert_not_called()
+
+    @patch("mapbox_baselayer.management.commands.generate_pmtiles.time.sleep")
+    @patch("mapbox_baselayer.management.commands.generate_pmtiles.logger")
+    def test_download_tile_worker_logs_url_and_network_error_without_retry(
+        self, mock_logger, mock_sleep
+    ):
+        import requests
+
+        from mapbox_baselayer.management.commands.generate_pmtiles import Command
+
+        command = Command()
+        self.mock_get.side_effect = requests.exceptions.ConnectionError(
+            "Connection failed"
+        )
+
+        tile_id, content = command.download_tile_worker(1, "http://mock-tile")
+
+        self.assertEqual(tile_id, 1)
+        self.assertIsNone(content)
+        self.mock_get.assert_called_once()
+        mock_sleep.assert_not_called()
+        mock_logger.warning.assert_called_once_with(
+            "%s (%s)", "http://mock-tile", "Connection failed"
+        )
+        mock_logger.error.assert_not_called()
 
     @patch("mapbox_baselayer.management.commands.generate_pmtiles.wait")
     def test_generate_pmtiles_large_number_of_tiles(self, mock_wait):
