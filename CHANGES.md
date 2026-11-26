@@ -9,6 +9,13 @@ CHANGELOG
 * Handling bad response in tile download
 * Test app now use maplibre-gl@^6 instead of maplibre-gl@latest to avoid breaking changes in the future.
 * Fix referrer policy to avoid OSM tiles 403 error when using maplibre-gl@^6
+* Add `--attribution` option to `install_layer ign` command (defaulting to `© IGN`)
+* Serve style URL layers through the local TileJSON endpoint to apply attribution overrides and caching
+
+**Bugfixes**
+
+* Include `real_url` in style cache key to avoid stale cache when style URL changes
+* Only fill missing source attribution in style TileJSON when layer attribution is set
 
 
 1.5.2         (2026-07-16)

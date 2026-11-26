@@ -158,16 +158,17 @@ class MapBaseLayer(models.Model):
         if self.base_layer_type == LayerType.STYLE_URL:
             # get real url
             real_url = self.real_url
-            cache_key = hashlib.md5(self.slug.encode()).hexdigest()
+            cache_key = hashlib.md5(f"{self.slug}:{real_url}".encode()).hexdigest()
             data = cache.get(cache_key)
             if data is None:
                 data = requests.get(real_url).json()
                 cache.set(cache_key, data)
             # If defined in model, fill missing attributions from the fetched style
-            for source_name, source_data in data.get("sources", {}).items():
-                source_attribution = source_data.get("attribution")
-                if not source_attribution:
-                    source_data["attribution"] = self.attribution
+            if self.attribution:
+                for source_name, source_data in data.get("sources", {}).items():
+                    source_attribution = source_data.get("attribution")
+                    if not source_attribution:
+                        source_data["attribution"] = self.attribution
 
         else:
             data = {
@@ -193,10 +194,7 @@ class MapBaseLayer(models.Model):
 
     @cached_property
     def url(self):
-        if self.base_layer_type != LayerType.STYLE_URL:
-            return reverse("mapbox_baselayer:tilejson", args=(self.pk,))
-        else:
-            return self.style_url
+        return reverse("mapbox_baselayer:tilejson", args=(self.pk,))
 
     @cached_property
     def real_url(self):

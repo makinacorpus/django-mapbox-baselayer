@@ -57,4 +57,5 @@ Tile size should be 256 for raster and 512 for vector.
 ./manage.py install_layer ign ortho plan maps scan_25 cadastre plan_vt
 ./manage.py install_layer ign maps scan_25 --key my_api_key --order=1
 ./manage.py install_layer ign cadastre --overlay
+./manage.py install_layer ign ortho --attribution "© IGN - Custom"
 ```
