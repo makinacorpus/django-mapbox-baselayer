@@ -62,6 +62,7 @@ class InstallLayerIGNDefault(TestCase):
         self.assertEqual(layer.base_layer_type, "raster")
         self.assertEqual(layer.tile_size, 256)
         self.assertFalse(layer.is_overlay)
+        self.assertEqual(layer.attribution, "© IGN")
 
     def test_default_ortho_has_tile(self):
         layer = MapBaseLayer.objects.get(name="Orthophoto IGN")
@@ -100,6 +101,7 @@ class InstallLayerIGNMultipleLayers(TestCase):
         self.assertEqual(layer.base_layer_type, "mapbox")
         self.assertEqual(layer.tile_size, 512)
         self.assertIn("vectorTiles", layer.style_url)
+        self.assertEqual(layer.attribution, "© IGN")
 
 
 class InstallLayerIGNWithKey(TestCase):
@@ -180,6 +182,29 @@ class InstallLayerIGNWithOrder(TestCase):
     def test_ign_order(self):
         layer = MapBaseLayer.objects.get(name="Orthophoto IGN")
         self.assertEqual(layer.order, 7)
+
+
+class InstallLayerIGNWithAttribution(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        call_command(
+            "install_layer",
+            "ign",
+            "ortho",
+            "plan_vt",
+            "--attribution",
+            "© Custom IGN",
+            stdout=StringIO(),
+            stderr=StringIO(),
+        )
+
+    def test_ign_custom_attribution_raster(self):
+        layer = MapBaseLayer.objects.get(name="Orthophoto IGN")
+        self.assertEqual(layer.attribution, "© Custom IGN")
+
+    def test_ign_custom_attribution_mapbox_style(self):
+        layer = MapBaseLayer.objects.get(name="Plan IGN VT")
+        self.assertEqual(layer.attribution, "© Custom IGN")
 
 
 class InstallLayerNoProvider(TestCase):

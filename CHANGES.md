@@ -1,6 +1,20 @@
 CHANGELOG
 =========
 
+1.5.2+dev     (XXXX-XX-XX)
+--------------------------
+
+**Improvements**
+
+* Add `--attribution` option to `install_layer ign` command (defaulting to `© IGN`)
+* Serve style URL layers through the local TileJSON endpoint to apply attribution overrides and caching
+
+**Bugfixes**
+
+* Include `real_url` in style cache key to avoid stale cache when style URL changes
+* Only fill missing source attribution in style TileJSON when layer attribution is set
+
+
 1.5.2         (2026-07-16)
 --------------------------
 

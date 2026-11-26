@@ -47,6 +47,12 @@ class MapBaseLayerTEstCase(TestCase):
     def test_style_url(self):
         self.assertEqual("mapbox://styles/mystyle", self.mapbox_base_layer.style_url)
 
+    def test_style_layer_url(self):
+        self.assertEqual(
+            self.mapbox_base_layer.url,
+            reverse("mapbox_baselayer:tilejson", args=(self.mapbox_base_layer.pk,)),
+        )
+
     def test_raster_url(self):
         self.assertEqual(
             self.raster_base_layer.url,
@@ -198,3 +204,25 @@ class PMTileModelTestCase(TestCase):
         self.assertEqual(
             data["sources"]["source2"]["attribution"], "Existing Attribution"
         )
+
+    @patch("mapbox_baselayer.models.requests.get")
+    def test_tilejson_style_url_empty_attribution(self, mock_get):
+        mock_response = Mock()
+        mock_response.json.return_value = {
+            "version": 8,
+            "sources": {
+                "source1": {"type": "vector", "tiles": ["http://tiles"]},
+            },
+        }
+        mock_get.return_value = mock_response
+
+        layer = MapBaseLayer.objects.create(
+            name="Style Layer No Attribution",
+            base_layer_type="mapbox",
+            style_url="http://style-url-no-attr",
+            attribution="",
+        )
+
+        data = layer.tilejson
+
+        self.assertNotIn("attribution", data["sources"]["source1"])

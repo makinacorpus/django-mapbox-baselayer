@@ -24,6 +24,12 @@ class Command(BaseCommand):
             default=False,
         )
         ign_parser.add_argument(
+            "--attribution",
+            type=str,
+            default="© IGN",
+            help="Attribution text for the base layer",
+        )
+        ign_parser.add_argument(
             "layers",
             nargs="*",
             type=str,
@@ -130,6 +136,7 @@ class Command(BaseCommand):
         key = options.get("key")
         overlay = options.get("overlay")
         order = options.get("order")
+        attribution = options.get("attribution", "© IGN")
         layers = options.get("layers", [])
 
         if not layers:
@@ -184,7 +191,7 @@ class Command(BaseCommand):
                     is_overlay=overlay,
                     min_zoom=self.raster_layers[layer]["min_zoom"],
                     max_zoom=self.raster_layers[layer]["max_zoom"],
-                    attribution="© IGN - GeoPortail",
+                    attribution=attribution,
                     order=order,
                 )
                 BaseLayerTile.objects.bulk_create(
@@ -202,7 +209,7 @@ class Command(BaseCommand):
                     is_overlay=overlay,
                     min_zoom=style["min_zoom"],
                     max_zoom=style["max_zoom"],
-                    attribution="© IGN - GeoPortail",
+                    attribution=attribution,
                     style_url=style["url"],
                     order=order,
                 )
