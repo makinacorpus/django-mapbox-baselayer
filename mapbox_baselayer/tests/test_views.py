@@ -114,6 +114,10 @@ class MapBaseLayerViewTestCase(TestCase):
         self.assertTemplateUsed(response, "test_app/map_example.html")
         # Layers are now fetched via JavaScript fetch() call to the API
         self.assertContains(response, "/mapbox-baselayers/")
+        self.assertContains(
+            response,
+            '<meta name="referrer" content="strict-origin-when-cross-origin"/>',
+        )
 
     def test_baselayer_list_view(self):
         # Add an overlay layer

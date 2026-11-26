@@ -4,10 +4,10 @@
 <html lang="{{ lang }}">
 <head>
     <meta charset="utf-8"/>
+    <meta name="referrer" content="strict-origin-when-cross-origin"/>
     <title>{% trans "MapLibre GL JS Example" %}</title>
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no"/>
-    <script src="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.js"></script>
-    <link href="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css" rel="stylesheet"/>
+    <link href="https://unpkg.com/maplibre-gl@^6/dist/maplibre-gl.css" rel="stylesheet"/>
     <style>
         body {
             margin: 0;
@@ -63,7 +63,9 @@
     </div>
 </div>
 
-<script>
+<script type="module">
+    import * as maplibregl from 'https://unpkg.com/maplibre-gl@^6/dist/maplibre-gl.mjs';
+
     const defaultStyle = 'https://demotiles.maplibre.org/style.json';
     let map;
     let currentBaseLayerUrl = null;

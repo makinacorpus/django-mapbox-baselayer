@@ -1,5 +1,6 @@
 from django.contrib.admin.sites import AdminSite
 from django.test import RequestFactory, TestCase
+from django.urls import reverse
 
 from mapbox_baselayer.admin import (
     MapBaseLayerAdmin,
@@ -169,6 +170,18 @@ class MapBaseLayerAdminTestCase(TestCase):
 
     def test_has_change_permission_true(self):
         self.assertTrue(self.admin.has_change_permission(self.request))
+
+    def test_change_view_includes_referrer_meta(self):
+        layer = MapBaseLayer.objects.create(name="test", base_layer_type="raster")
+        self.client.force_login(self.request.user)
+        response = self.client.get(
+            reverse("admin:mapbox_baselayer_mapbaselayer_change", args=[layer.pk])
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            '<meta name="referrer" content="strict-origin-when-cross-origin"/>',
+        )
 
 
 class PMTilesInlineTestCase(TestCase):

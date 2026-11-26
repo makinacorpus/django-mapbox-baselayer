@@ -15,39 +15,39 @@ class StyleURLInlineTestCase(TestCase):
         )
 
     def test_style_url_with_tiles_not_allowed(self):
-        # Normalement, si le type est STYLE_URL (mapbox), on ne devrait pas avoir besoin de BaseLayerTile.
-        # Mais BaseLayerTileInline a min_num = 1.
+        # When type is STYLE_URL (mapbox), BaseLayerTile should not be required,
+        # even though BaseLayerTileInline has min_num = 1 by default.
 
         admin = MapBaseLayerAdmin(MapBaseLayer, self.site)
 
-        # Simuler un objet existant avec style_url
+        # Simulate an existing object with style_url
         obj = MapBaseLayer.objects.create(
             name="Style Layer",
             base_layer_type="mapbox",
             style_url="mapbox://styles/test/123",
         )
 
-        # On simule un changement d'objet dans l'admin
+        # Simulate changing the object in the admin
         request = self.factory.get(
             f"/admin/mapbox_baselayer/mapbaselayer/{obj.pk}/change/"
         )
         request.user = self.superuser
 
-        # Récupérer les inlines
+        # Retrieve inlines
         inlines = admin.get_inline_instances(request, obj)
         tile_inline = next(
             (i for i in inlines if isinstance(i, BaseLayerTileInline)), None
         )
         self.assertIsNotNone(tile_inline)
 
-        # On vérifie que si le type est mapbox, BaseLayerTileInline n'est pas requis (min_num=0)
+        # Verify that when type is mapbox, BaseLayerTileInline is not required (min_num=0)
         formsets = list(admin.get_formsets_with_inlines(request, obj))
         tile_formset = next(
             fs for fs, inline in formsets if isinstance(inline, BaseLayerTileInline)
         )
         self.assertEqual(tile_formset.min_num, 0)
 
-        # Testons ce qui se passe si on essaie de valider le formset avec 0 formulaires
+        # Test validating the formset with 0 forms
         formset_data = {
             "tiles-TOTAL_FORMS": "0",
             "tiles-INITIAL_FORMS": "0",
